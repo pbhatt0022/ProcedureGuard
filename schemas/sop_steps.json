@@ -1,0 +1,36 @@
+{
+  "_note": "Output of sop_extractor.py (Document Intelligence). Passed to Agent 1.",
+  "run_id": "run-20260608-001",
+  "sop_document": "prusa-mk3s-assembly-v2.pdf",
+  "extracted_at": "2026-06-08T10:00:00Z",
+  "total_steps": 3,
+  "steps": [
+    {
+      "step_id": "step-001",
+      "sequence": 1,
+      "description": "Attach the Y-axis motor to the frame using M3x10 screws. Torque to 0.4 Nm.",
+      "check_type": "presence",
+      "expected_duration_seconds": null,
+      "section": "2.1 Y-Axis Assembly",
+      "visual_references": ["figure-2a", "figure-2b"]
+    },
+    {
+      "step_id": "step-002",
+      "sequence": 2,
+      "description": "Thread the Y-axis belt through the motor pulley. Belt must be taut with no slack.",
+      "check_type": "presence",
+      "expected_duration_seconds": null,
+      "section": "2.2 Y-Axis Belt",
+      "visual_references": ["figure-3"]
+    },
+    {
+      "step_id": "step-003",
+      "sequence": 3,
+      "description": "Allow adhesive to cure for minimum 30 seconds before proceeding.",
+      "check_type": "duration",
+      "expected_duration_seconds": 30,
+      "section": "2.3 Adhesive Application",
+      "visual_references": []
+    }
+  ]
+}

@@ -1,0 +1,43 @@
+{
+  "_note": "Output of video_analyzer.py. Phase 1 (Content Understanding) + Phase 2 (GPT-4o). One entry per scene segment. Passed to Agent 2.",
+  "run_id": "run-20260608-001",
+  "video_file": "manufacturing-videos/run-20260608-001/assembly-recording.mp4",
+  "analyzer_id": "procedureguard-compliance-v1",
+  "analyzed_at": "2026-06-08T10:05:00Z",
+  "total_segments": 3,
+  "segments": [
+    {
+      "segment_id": "seg-001",
+      "start_time_seconds": 0.0,
+      "end_time_seconds": 45.2,
+      "description": "The worker picks up a screwdriver and begins fastening the motor bracket to the printer frame with three M3 screws.",
+      "ppe_status": "compliant",
+      "tool_in_use": "screwdriver",
+      "component_contact": "worker attaching motor bracket to frame with screws",
+      "visible_safety_concern": false,
+      "action_observed": "Worker is securing Y-axis motor to the printer frame using a screwdriver"
+    },
+    {
+      "segment_id": "seg-002",
+      "start_time_seconds": 45.2,
+      "end_time_seconds": 82.7,
+      "description": "The worker sets down the screwdriver and begins threading a rubber belt around the motor pulley with bare hands.",
+      "ppe_status": "compliant",
+      "tool_in_use": null,
+      "component_contact": "worker handling belt and motor pulley",
+      "visible_safety_concern": false,
+      "action_observed": "Worker is threading a rubber belt through a small pulley on the motor"
+    },
+    {
+      "segment_id": "seg-003",
+      "start_time_seconds": 82.7,
+      "end_time_seconds": 105.0,
+      "description": "The worker steps back from the assembly table and pauses, reviewing the completed stage.",
+      "ppe_status": "compliant",
+      "tool_in_use": null,
+      "component_contact": null,
+      "visible_safety_concern": false,
+      "action_observed": "Worker pauses and waits with hands away from the assembly area"
+    }
+  ]
+}

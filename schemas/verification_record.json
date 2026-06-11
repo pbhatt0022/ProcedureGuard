@@ -1,0 +1,18 @@
+{
+  "_note": "Output of compliance_engine.py + sequence_timing.py (Agent 2). Written to Cosmos DB container: verification-records. Partition key: run_id.",
+  "run_id": "run-20260608-001",
+  "item_id": "check-001",
+  "step_id": "step-001",
+  "sequence": 1,
+  "criterion": "Worker attaches Y-axis motor to frame using screws",
+  "verdict": "Compliant",
+  "confidence": 0.91,
+  "evidence_segment_id": "seg-001",
+  "evidence_timestamp_start": 0.0,
+  "evidence_timestamp_end": 45.2,
+  "keyframe_blob_path": "keyframes/run-20260608-001/step-001.jpg",
+  "reasoning": "Segment 1 shows the worker using a screwdriver to attach a motor bracket to the frame, consistent with the SOP requirement.",
+  "sequence_ok": true,
+  "duration_ok": null,
+  "created_at": "2026-06-08T10:06:00Z"
+}
