@@ -1,7 +1,9 @@
 """
 Tests for src/ingestion/video_analyzer.py
 
-Phase 1 (Content Understanding) and Phase 2 (GPT-4o compliance fields).
+Phase 2 only — GPT-4o Vision compliance field extraction from time-windowed
+segments. Phase 1 (Content Understanding) was removed June 18; duration is now
+probed via OpenCV and segments are synthesized by build_time_windowed_segments().
 
 Run smoke test against a real video:
   python scripts/test_video_pipeline.py
@@ -15,55 +17,38 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 from src.ingestion.video_analyzer import (
-    COMPLIANCE_FIELD_SCHEMA,
+    build_time_windowed_segments,
     extract_compliance_fields,
-    parse_observations,
     run_video_phase2,
 )
 
 
-# ── Unit tests (no Azure required) ──────────────────────────────────────────
+# ── build_time_windowed_segments (no Azure required) ─────────────────────────
 
-def test_compliance_schema_has_required_fields():
-    """Compliance field schema must define all 5 required fields."""
-    required = {"ppe_status", "tool_in_use", "component_contact",
-                "visible_safety_concern", "action_observed"}
-    assert required == set(COMPLIANCE_FIELD_SCHEMA.fields.keys())
-
-
-def test_parse_observations_returns_required_keys(mock_analysis_result, sample_run_id):
-    """parse_observations output must contain all top-level schema keys."""
-    result = parse_observations(mock_analysis_result, sample_run_id, "https://example.com/video.mp4")
-    assert set(result.keys()) == {
-        "run_id", "video_file", "analyzer_id", "analyzed_at", "total_segments", "segments"
-    }
+def test_windows_cover_full_duration():
+    """Windows must tile from 0 to the clip end with no trailing gap."""
+    segs = build_time_windowed_segments(300.0, window_seconds=25.0, overlap_seconds=6.0)
+    assert segs[0]["start_time_seconds"] == 0.0
+    assert segs[-1]["end_time_seconds"] >= 300.0 - 0.01
 
 
-def test_parse_observations_segment_keys(mock_analysis_result, sample_run_id):
-    """Each segment must contain all required field keys including description."""
-    result = parse_observations(mock_analysis_result, sample_run_id, "https://example.com/video.mp4")
-    assert result["total_segments"] == 1
-    seg = result["segments"][0]
-    assert set(seg.keys()) == {
-        "segment_id", "start_time_seconds", "end_time_seconds",
-        "description",
-        "ppe_status", "tool_in_use", "component_contact",
-        "visible_safety_concern", "action_observed",
-    }
+def test_windows_respect_max_cap():
+    """Window count never exceeds max_windows, even on long clips."""
+    segs = build_time_windowed_segments(3600.0, window_seconds=25.0, overlap_seconds=6.0, max_windows=20)
+    assert len(segs) <= 20
 
 
-def test_parse_observations_timestamps(mock_analysis_result, sample_run_id):
-    """Segment timestamps must be correctly converted from milliseconds to seconds."""
-    result = parse_observations(mock_analysis_result, sample_run_id, "https://example.com/video.mp4")
-    seg = result["segments"][0]
-    assert seg["start_time_seconds"] == 0.0
-    assert seg["end_time_seconds"] == 45.2
+def test_windows_empty_for_zero_duration():
+    """A non-positive duration yields no windows."""
+    assert build_time_windowed_segments(0.0) == []
 
 
-def test_parse_observations_skips_non_audiovisual(mock_non_audiovisual_result, sample_run_id):
-    """Non-audio-visual content items must be skipped."""
-    result = parse_observations(mock_non_audiovisual_result, sample_run_id, "https://example.com/video.mp4")
-    assert result["total_segments"] == 0
+def test_window_segments_have_null_compliance_fields():
+    """Fresh segment stubs must carry nulled compliance fields for Phase 2 to fill."""
+    seg = build_time_windowed_segments(60.0)[0]
+    assert seg["ppe_status"] is None
+    assert seg["action_observed"] is None
+    assert seg["visible_safety_concern"] is False
 
 
 # ── Fixtures ─────────────────────────────────────────────────────────────────
@@ -71,51 +56,6 @@ def test_parse_observations_skips_non_audiovisual(mock_non_audiovisual_result, s
 @pytest.fixture
 def sample_run_id():
     return "run-test-00000001"
-
-
-class _MockContent:
-    """Minimal stand-in for AudioVisualContent returned by the SDK."""
-    def __init__(self, kind, start_ms, end_ms, fields=None, markdown=None):
-        self.kind = kind
-        self.start_time_ms = start_ms
-        self.end_time_ms = end_ms
-        self.fields = fields or {}
-        self.markdown = markdown
-
-
-class _MockResult:
-    def __init__(self, contents):
-        self.contents = contents
-
-
-@pytest.fixture
-def mock_analysis_result():
-    from azure.ai.contentunderstanding.models import AnalysisContentKind
-    content = _MockContent(
-        kind=AnalysisContentKind.AUDIO_VISUAL,
-        start_ms=0,
-        end_ms=45200,
-    )
-    return _MockResult(contents=[content])
-
-
-@pytest.fixture
-def mock_non_audiovisual_result():
-    content = _MockContent(kind="image", start_ms=0, end_ms=5000)
-    return _MockResult(contents=[content])
-
-
-@pytest.fixture
-def mock_analysis_result_with_markdown():
-    """Analysis result where the segment has a Content Understanding description."""
-    from azure.ai.contentunderstanding.models import AnalysisContentKind
-    content = _MockContent(
-        kind=AnalysisContentKind.AUDIO_VISUAL,
-        start_ms=0,
-        end_ms=45200,
-        markdown="Worker uses an Allen key to tighten three M3 screws on the motor bracket.",
-    )
-    return _MockResult(contents=[content])
 
 
 def _make_openai_mock(response_json: dict) -> MagicMock:
@@ -127,29 +67,7 @@ def _make_openai_mock(response_json: dict) -> MagicMock:
     return mock_client
 
 
-# ── Phase 2: parse_observations description capture ──────────────────────────
-
-def test_parse_observations_description_from_markdown(
-    mock_analysis_result_with_markdown, sample_run_id
-):
-    """description must be populated from content.markdown when present."""
-    result = parse_observations(
-        mock_analysis_result_with_markdown, sample_run_id, "https://example.com/video.mp4"
-    )
-    assert result["segments"][0]["description"] == (
-        "Worker uses an Allen key to tighten three M3 screws on the motor bracket."
-    )
-
-
-def test_parse_observations_description_empty_when_no_markdown(
-    mock_analysis_result, sample_run_id
-):
-    """description must be empty string when content has no markdown attribute."""
-    result = parse_observations(mock_analysis_result, sample_run_id, "https://example.com/video.mp4")
-    assert result["segments"][0]["description"] == ""
-
-
-# ── Phase 2: extract_compliance_fields ───────────────────────────────────────
+# ── extract_compliance_fields ────────────────────────────────────────────────
 
 def test_extract_compliance_fields_returns_all_keys():
     """Must return all 5 compliance field keys with correct types."""
@@ -179,8 +97,8 @@ def test_extract_compliance_fields_returns_all_keys():
     assert isinstance(result["action_observed"], str)
 
 
-def test_extract_compliance_fields_empty_description_skips_api():
-    """Empty description with no image URL must return null fields without calling OpenAI."""
+def test_extract_compliance_fields_empty_description_and_no_images_skips_api():
+    """Empty description with no frames must return null fields without calling OpenAI."""
     mock_client = MagicMock()
 
     with patch("src.ingestion.video_analyzer.get_openai_client", return_value=mock_client):
@@ -197,8 +115,8 @@ def test_extract_compliance_fields_empty_description_skips_api():
     assert result["visible_safety_concern"] is False
 
 
-def test_extract_compliance_fields_vision_mode_sends_image_url():
-    """When keyframe_image_url is provided, the request must include image_url content."""
+def test_extract_compliance_fields_vision_mode_sends_image_content():
+    """When keyframe_images is provided, the request must include image_url content items."""
     canned = {
         "ppe_status": "compliant",
         "tool_in_use": None,
@@ -207,24 +125,28 @@ def test_extract_compliance_fields_vision_mode_sends_image_url():
         "action_observed": "Worker inspects completed assembly.",
     }
     mock_client = _make_openai_mock(canned)
-    image_url = "https://pgstorepriya2026.blob.core.windows.net/keyframes/run-001/seg-001.jpg?sv=..."
+    frames = [
+        "data:image/jpeg;base64,AAAA",
+        "data:image/jpeg;base64,BBBB",
+    ]
 
     with patch("src.ingestion.video_analyzer.get_openai_client", return_value=mock_client):
         extract_compliance_fields(
-            description="Worker inspects assembly.",
+            description="",
             segment_id="seg-001",
             run_id="run-test-001",
-            keyframe_image_url=image_url,
+            keyframe_images=frames,
         )
 
     call_kwargs = mock_client.chat.completions.create.call_args
     messages = call_kwargs.kwargs.get("messages") or call_kwargs[1]["messages"]
     user_message = next(m for m in messages if m["role"] == "user")
-    # User content must be a list containing an image_url item
+    # User content must be a list containing one image_url item per frame
     assert isinstance(user_message["content"], list)
     image_items = [c for c in user_message["content"] if c.get("type") == "image_url"]
-    assert len(image_items) == 1
-    assert image_items[0]["image_url"]["url"] == image_url
+    assert len(image_items) == len(frames)
+    assert image_items[0]["image_url"]["url"] == frames[0]
+    assert image_items[0]["image_url"]["detail"] == "high"
 
 
 def test_extract_compliance_fields_bad_json_returns_nulls():
@@ -245,7 +167,7 @@ def test_extract_compliance_fields_bad_json_returns_nulls():
     assert result["action_observed"] is None
 
 
-# ── Phase 2: run_video_phase2 ────────────────────────────────────────────────
+# ── run_video_phase2 ─────────────────────────────────────────────────────────
 
 def test_run_video_phase2_fills_all_segments(sample_run_id):
     """run_video_phase2 must call extract_compliance_fields for every segment."""
@@ -286,6 +208,7 @@ def test_run_video_phase2_fills_all_segments(sample_run_id):
         "action_observed": "Worker tightens screws.",
     }
 
+    # No video_url → text-only mode, so no OpenCV. Patch the field extractor.
     with patch(
         "src.ingestion.video_analyzer.extract_compliance_fields",
         return_value=canned_fields,
@@ -296,38 +219,3 @@ def test_run_video_phase2_fills_all_segments(sample_run_id):
     for seg in result["segments"]:
         assert seg["ppe_status"] == "compliant"
         assert seg["action_observed"] == "Worker tightens screws."
-
-
-def test_run_video_phase2_passes_keyframe_url_to_extractor(sample_run_id):
-    """keyframe_urls dict must be forwarded to extract_compliance_fields per segment."""
-    observations = {
-        "run_id": sample_run_id,
-        "segments": [
-            {
-                "segment_id": "seg-001",
-                "description": "Worker attaches motor.",
-                "ppe_status": None,
-                "tool_in_use": None,
-                "component_contact": None,
-                "visible_safety_concern": False,
-                "action_observed": None,
-            }
-        ],
-        "total_segments": 1,
-    }
-    keyframe_urls = {"seg-001": "https://example.com/keyframes/seg-001.jpg"}
-
-    with patch(
-        "src.ingestion.video_analyzer.extract_compliance_fields",
-        return_value={
-            "ppe_status": None,
-            "tool_in_use": None,
-            "component_contact": None,
-            "visible_safety_concern": False,
-            "action_observed": None,
-        },
-    ) as mock_ecf:
-        run_video_phase2(observations, sample_run_id, keyframe_urls=keyframe_urls)
-
-    _, kwargs = mock_ecf.call_args
-    assert kwargs.get("keyframe_image_url") == "https://example.com/keyframes/seg-001.jpg"

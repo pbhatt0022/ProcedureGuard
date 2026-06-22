@@ -12,10 +12,11 @@ Azure: Azure Blob Storage
 Owner: Person C (storage + orchestration)
 
 NOTE: Always generate a SAS URL with read permission when passing a Blob
-URL to Content Understanding or Document Intelligence — they need a
-pre-authenticated URL, not just the path.
+URL to Document Intelligence (SOP PDFs) or OpenCV/GPT-4o Vision (videos) —
+they need a pre-authenticated URL, not just the path.
 """
 import logging
+import os
 from datetime import datetime, timedelta, timezone
 
 from azure.identity import DefaultAzureCredential
@@ -41,49 +42,37 @@ def get_blob_service_client() -> BlobServiceClient:
 
 
 @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=2, max=10))
-def upload_sop(local_path: str, run_id: str, filename: str) -> str:
-    """
-    Upload an SOP PDF to Blob Storage.
-
-    Returns:
-        SAS URL valid for 2 hours — pass directly to Document Intelligence.
-    """
-    # TODO Week 3: implement upload + SAS URL generation
-    raise NotImplementedError("upload_sop not yet implemented")
-
-
-@retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=2, max=10))
-def upload_video(local_path: str, run_id: str, filename: str) -> str:
-    """
-    Upload a manufacturing video to Blob Storage.
-
-    Returns:
-        SAS URL valid for 4 hours — pass directly to Content Understanding.
-        NOTE: Use URL reference method (not binary upload) for Content Understanding.
-    """
-    # TODO Week 3: implement upload + SAS URL generation
-    raise NotImplementedError("upload_video not yet implemented")
-
-
-@retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=2, max=10))
 def write_keyframe(image_bytes: bytes, run_id: str, step_id: str) -> str:
     """
-    Write a keyframe image to Blob Storage.
-    Called by Agent 2 for each deviation or compliant step.
+    Write a keyframe image to Blob Storage or local folder fallback.
 
     Returns:
         Blob path string: keyframes/{run_id}/{step_id}.jpg
         Stored in the verification record for the evidence viewer.
     """
-    blob_path = f"{run_id}/{step_id}.jpg"
-    # TODO Week 3: implement upload
-    raise NotImplementedError("write_keyframe not yet implemented")
+    blob_path = f"keyframes/{run_id}/{step_id}.jpg"
+    
+    if cfg.storage_account_url:
+        try:
+            client = get_blob_service_client()
+            blob_client = client.get_blob_client(
+                container=cfg.storage_container_keyframes,
+                blob=f"{run_id}/{step_id}.jpg"
+            )
+            blob_client.upload_blob(image_bytes, overwrite=True)
+            logger.info(f"Uploaded keyframe to Azure Blob Storage: {blob_path}")
+            return blob_path
+        except Exception as exc:
+            logger.warning(f"Failed to upload keyframe to Azure Blob Storage, falling back to local: {exc}")
+            
+    # Local fallback
+    local_dir = os.path.join(cfg.runs_dir, run_id, "keyframes")
+    os.makedirs(local_dir, exist_ok=True)
+    local_file = os.path.join(local_dir, f"{step_id}.jpg")
+    with open(local_file, "wb") as f:
+        f.write(image_bytes)
+    logger.info(f"Saved keyframe locally: {local_file}")
+    
+    return blob_path
 
 
-def read_observations(run_id: str) -> dict:
-    """
-    Read the Observations JSON for a run from Blob Storage.
-    Stored as a JSON blob alongside the video during extraction.
-    """
-    # TODO Week 3: implement download + parse
-    raise NotImplementedError("read_observations not yet implemented")

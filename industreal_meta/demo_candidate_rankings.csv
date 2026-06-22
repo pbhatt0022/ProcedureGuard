@@ -1,0 +1,30 @@
+recording_id,split,mode,baseline_id,score,recommendation,visible_deltas,note
+22_assy_2_3,train,assy,22_assy_0_1,14,high,fit_wheel:-1; fit_pulley:-1; fit_wing:1; fit_wing_beam:-1,missing/reduced fit_wheel (-1); missing/reduced fit_pulley (-1); missing/reduced fit_wing_beam (-1); assembly clip
+18_assy_2_5,test,assy,18_assy_0_1,12,high,fit_pulley:-1; fit_wing:1; fit_wing_beam:-1,missing/reduced fit_pulley (-1); missing/reduced fit_wing_beam (-1); assembly clip; test split
+23_assy_1_2,test,assy,23_assy_0_1,12,high,fit_wheel:-1; fit_wing:-1; fit_wing_beam:1,missing/reduced fit_wheel (-1); missing/reduced fit_wing (-1); assembly clip; test split
+17_assy_1_5,test,assy,17_assy_0_1,10,high,fit_wheel:1; fit_pulley:-1; put_pulley:-1,missing/reduced fit_pulley (-1); missing/reduced put_pulley (-1); assembly clip; test split
+16_main_3_3,train,main,16_main_0_1,9,medium,fit_wheel:-2; put_wheel:-1,missing/reduced fit_wheel (-2); missing/reduced put_wheel (-1)
+25_assy_2_1,train,assy,25_assy_0_1,9,medium,fit_wing:-1; fit_wing_beam:-1; put_wheel:1,missing/reduced fit_wing (-1); missing/reduced fit_wing_beam (-1); assembly clip
+10_assy_3_2,test,assy,10_assy_0_1,8,medium,pull_wheel:1,repair/rework signal pull_wheel (+1); assembly clip; test split
+26_assy_1_5,val,assy,26_assy_0_1,8,medium,fit_pulley:-1,missing/reduced fit_pulley (-1); assembly clip; validation split
+11_assy_3_3,train,assy,11_assy_0_1,7,medium,fit_wheel:-1; put_wheel:1; pull_wheel:-1,missing/reduced fit_wheel (-1); assembly clip
+24_assy_2_4,val,assy,24_assy_0_1,7,medium,fit_pulley:1; fit_wing:-1,missing/reduced fit_wing (-1); assembly clip; validation split
+13_main_1_3,test,main,13_main_0_1,6,medium,fit_pulley:-1; put_wheel:2,missing/reduced fit_pulley (-1); test split
+05_assy_2_2,val,assy,05_assy_0_1,5,low,fit_pulley:1; put_wheel:-1; put_pulley:1,missing/reduced put_wheel (-1); assembly clip; validation split
+07_assy_2_3,train,assy,07_assy_0_1,5,low,put_wheel:-2,missing/reduced put_wheel (-2); assembly clip
+09_assy_3_1,test,assy,09_assy_0_1,5,low,,assembly clip; test split
+12_assy_3_4,test,assy,12_assy_0_1,5,low,,assembly clip; test split
+19_assy_3_5,test,assy,19_assy_0_1,5,low,fit_wheel:1,assembly clip; test split
+04_assy_2_1,train,assy,04_assy_0_1,4,low,fit_wing_beam:1; put_pulley:-1,missing/reduced put_pulley (-1); assembly clip
+20_assy_3_6,val,assy,20_assy_0_1,4,low,put_wheel:1,assembly clip; validation split
+27_main_1_3,train,main,27_main_0_1,4,low,fit_pulley:-1,missing/reduced fit_pulley (-1)
+01_assy_1_1,train,assy,01_assy_0_1,3,low,fit_wheel:1; fit_wing:1; put_wheel:2,assembly clip
+02_assy_1_2,train,assy,02_assy_0_1,3,low,fit_wheel:1,assembly clip
+06_assy_1_4,train,assy,06_assy_0_1,3,low,fit_wheel:1; fit_wing:1; fit_wing_beam:1,assembly clip
+10_main_3_4,test,main,10_main_0_1,2,low,,test split
+13_main_2_1,test,main,13_main_0_1,2,low,put_wheel:1,test split
+14_main_2_2,val,main,14_main_0_1,1,low,put_wheel:1,validation split
+14_main_2_3,val,main,14_main_0_1,1,low,put_wheel:3,validation split
+27_main_3_1,train,main,27_main_0_1,1,low,put_pulley:-1,missing/reduced put_pulley (-1)
+08_assy_2_4,test,assy,08_assy_0_1,-82,avoid,fit_wheel:-2; fit_pulley:-1; fit_wing:1; put_wheel:-1,"missing/reduced fit_wheel (-2); missing/reduced fit_pulley (-1); missing/reduced put_wheel (-1); assembly clip; test split; Known wrong-pin clip; fine-detail substitution, not a good demo."
+03_assy_1_3,test,assy,03_assy_0_1,-87,avoid,fit_wheel:-2,missing/reduced fit_wheel (-2); assembly clip; test split; Known front-chassis clip; already found not honestly catchable.

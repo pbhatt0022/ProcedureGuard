@@ -1,0 +1,217 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+@import "tailwindcss";
+
+:root {
+  --background: #FAF9F8;
+  --foreground: #201F1E;
+}
+
+@theme {
+  --font-sans: "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: "Cascadia Mono", Consolas, Monaco, monospace;
+  --font-display: "Plus Jakarta Sans", "Segoe UI", system-ui, sans-serif;
+
+  /* Brand / Azure */
+  --color-pg-primary: #0078D4;
+  --color-pg-primary-hover: #106EBE;
+  --color-pg-primary-pressed: #005A9E;
+  --color-pg-primary-subtle: #EFF6FC;
+  --color-pg-primary-border-subtle: #C7E0F4;
+  --color-pg-on-primary: #FFFFFF;
+
+  /* Neutral surfaces */
+  --color-pg-canvas: #FFFFFF;
+  --color-pg-app-background: #FAF9F8;
+  --color-pg-surface-1: #FFFFFF;
+  --color-pg-surface-2: #F3F2F1;
+  --color-pg-surface-3: #EDEBE9;
+  --color-pg-surface-selected: #EFF6FC;
+  --color-pg-surface-hover: #F5F5F5;
+  --color-pg-surface-disabled: #F3F2F1;
+
+  /* Text */
+  --color-pg-ink: #201F1E;
+  --color-pg-ink-muted: #605E5C;
+  --color-pg-ink-subtle: #8A8886;
+  --color-pg-ink-disabled: #A19F9D;
+  --color-pg-inverse-canvas: #1B1A19;
+  --color-pg-inverse-ink: #FFFFFF;
+  --color-pg-inverse-ink-muted: #C8C6C4;
+
+  --color-pg-hairline: rgba(32, 31, 30, 0.06);
+  --color-pg-hairline-strong: rgba(32, 31, 30, 0.12);
+  --color-pg-focus-ring: #0078D4;
+
+  /* Accessible semantic status colors */
+  --color-pg-semantic-success: #107C10;     /* Compliant */
+  --color-pg-semantic-success-bg: #DFF6DD;
+  --color-pg-semantic-warning: #8A6A00;     /* Unable to verify / caution text (fixed contrast to AA) */
+  --color-pg-semantic-warning-bg: #FFF4CE;
+  --color-pg-semantic-error: #D13438;       /* Deviation detected */
+  --color-pg-semantic-error-bg: #FDE7E9;
+  --color-pg-semantic-info: #0078D4;        /* Informational / processing */
+  --color-pg-semantic-info-bg: #EFF6FC;
+  --color-pg-semantic-review: #5C2E91;      /* Human review required */
+  --color-pg-semantic-review-bg: #F3EAFF;
+
+  /* Data visualization / scores */
+  --color-pg-score-high: #107C10;
+  --color-pg-score-medium: #F7630C;
+  --color-pg-score-low: #D13438;
+  --color-pg-score-neutral: #605E5C;
+
+  /* Radius scale */
+  --radius-pg-xs: 4px;
+  --radius-pg-sm: 6px;
+  --radius-pg-md: 8px;
+  --radius-pg-lg: 12px;
+  --radius-pg-xl: 16px;
+
+  /* Spacing overrides */
+  --spacing-pg-xxs: 4px;
+  --spacing-pg-xs: 8px;
+  --spacing-pg-sm: 12px;
+  --spacing-pg-md: 16px;
+  --spacing-pg-lg: 20px;
+  --spacing-pg-xl: 24px;
+  --spacing-pg-xxl: 32px;
+  --spacing-pg-section: 48px;
+
+  /* Elevation (Shadows) */
+  --shadow-pg-subtle: 0 1px 2px rgba(0, 0, 0, 0.04), 0 0 1px rgba(0, 0, 0, 0.08);
+  --shadow-pg-card: 0 2px 4px rgba(0, 0, 0, 0.05), 0 0 1px rgba(0, 0, 0, 0.12);
+  --shadow-pg-flyout: 0 8px 16px rgba(0, 0, 0, 0.08), 0 0 1px rgba(0, 0, 0, 0.16);
+  --shadow-pg-dialog: 0 16px 32px rgba(0, 0, 0, 0.12), 0 0 1px rgba(0, 0, 0, 0.2);
+
+  /* Easing curves */
+  --transition-timing-function-ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --transition-timing-function-ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+  --transition-timing-function-ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+body {
+  background-color: var(--color-pg-app-background);
+  color: var(--color-pg-ink);
+  font-family: var(--font-sans);
+  margin: 0;
+  padding: 0;
+}
+
+/* Tabular figures for metrics, durations, and timestamps */
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Custom scrollbars for detailsList and evidence panel */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-pg-hairline-strong);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-pg-ink-subtle);
+}
+
+/* Custom focus outline style */
+*:focus-visible {
+  outline: 2px solid var(--color-pg-focus-ring) !important;
+  outline-offset: 2px !important;
+}
+
+/* Focus helper for active keyboard items */
+.focus-ring {
+  outline: 2px solid var(--color-pg-focus-ring) !important;
+  outline-offset: -2px !important;
+}
+
+/* Keyboard active navigation styles */
+.row-selected {
+  background-color: var(--color-pg-surface-selected) !important;
+}
+
+/* Tactile click/press feedback utility */
+.btn-tactile {
+  transition: transform 120ms cubic-bezier(0.23, 1, 0.32, 1), background-color 120ms ease, opacity 120ms ease, border-color 120ms ease;
+}
+.btn-tactile:active {
+  transform: scale(0.97);
+}
+
+/* Staggered row fade-in animations */
+@keyframes rowFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-row {
+  opacity: 0;
+  animation: rowFadeIn 240ms cubic-bezier(0.23, 1, 0.32, 1) forwards;
+}
+
+/* Fade in for standard components */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.animate-fade-in {
+  animation: fadeIn 200ms ease-out forwards;
+}
+
+/* Restrained display tweaks for headings */
+h1, h2, h3 {
+  font-family: var(--font-display);
+  letter-spacing: -0.015em;
+  font-weight: 600;
+}
+
+.font-display {
+  font-family: var(--font-display);
+}
+
+/* Scrubber timeline tick hover glow styles */
+.timeline-tick-btn {
+  /* hover context container */
+}
+
+.timeline-tick {
+  transition: transform 140ms cubic-bezier(0.23, 1, 0.32, 1), filter 140ms ease, opacity 140ms ease;
+  will-change: transform, filter;
+}
+
+.timeline-tick-btn:hover .timeline-tick {
+  transform: scaleY(1.2) scaleX(1.4) translateY(-1px);
+  z-index: 30;
+}
+
+.timeline-tick-btn:hover .timeline-tick.success {
+  filter: drop-shadow(0 0 4px var(--color-pg-semantic-success));
+}
+
+.timeline-tick-btn:hover .timeline-tick.error {
+  filter: drop-shadow(0 0 5px var(--color-pg-semantic-error));
+}
+
+.timeline-tick-btn:hover .timeline-tick.warning {
+  filter: drop-shadow(0 0 4px var(--color-pg-semantic-warning));
+}
+
+.timeline-tick-btn:hover .timeline-tick.review {
+  filter: drop-shadow(0 0 4px var(--color-pg-semantic-review));
+}
+

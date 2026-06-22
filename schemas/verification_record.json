@@ -14,5 +14,6 @@
   "reasoning": "Segment 1 shows the worker using a screwdriver to attach a motor bracket to the frame, consistent with the SOP requirement.",
   "sequence_ok": true,
   "duration_ok": null,
+  "not_observed": false,
   "created_at": "2026-06-08T10:06:00Z"
 }

@@ -26,11 +26,16 @@ def sample_run_id():
 
 @pytest.fixture
 def sample_checklist_item():
+    # verifiability="presence" + a non-null observable_action are required for
+    # reason_step to call GPT-4o; fine_detail or null observable_action short-circuits
+    # to a Requires Inspection verdict without an API call (June 16 tiering).
     return {
         "item_id": "check-001",
         "step_id": "step-001",
         "sequence": 1,
         "criterion": "Worker attaches Y-axis motor to frame using M3x10 screws",
+        "observable_action": "The Y-axis motor is mounted onto the frame.",
+        "verifiability": "presence",
         "check_type": "presence",
         "expected_duration_seconds": None,
         "sop_section": "2.1 Y-Axis Assembly",

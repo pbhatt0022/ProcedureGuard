@@ -104,7 +104,7 @@ def validate_sequence_and_timing(
 
     Args:
         checklist:    Output of generate_checklist() — schemas/compliance_checklist.json
-        observations: Output of parse_observations() — schemas/video_observations.json
+        observations: Video observations dict — schemas/video_observations.json
 
     Returns:
         list[TimingResult] — one entry per checklist item, in sequence order.
@@ -191,6 +191,7 @@ def validate_sequence_and_timing(
             note=note,
         ))
 
-        prev_start = obs_start
+        if obs_start is not None:
+            prev_start = obs_start
 
     return results

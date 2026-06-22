@@ -1,0 +1,62 @@
+{
+  "run_id": "sop-gt-v3",
+  "sop_document": "STEMFIE_vehicle_kit_assembly_GTgrounded.pdf",
+  "extracted_at": "2026-06-20T16:53:00.000000+00:00",
+  "total_steps": 6,
+  "steps": [
+    {
+      "step_id": "step-001",
+      "sequence": 1,
+      "description": "Mount the short braces onto the base frame and secure them with a short push-fit pin, a tooth-lock washer, and a hex nut.",
+      "check_type": "presence",
+      "expected_duration_seconds": null,
+      "section": "STEP 1 Base frame",
+      "visual_references": []
+    },
+    {
+      "step_id": "step-002",
+      "sequence": 2,
+      "description": "Attach the long brace to the assembly, align it, and secure it with a short push-fit pin, a tooth-lock washer, and a hex nut.",
+      "check_type": "presence",
+      "expected_duration_seconds": null,
+      "section": "STEP 2 Long brace",
+      "visual_references": []
+    },
+    {
+      "step_id": "step-003",
+      "sequence": 3,
+      "description": "Install an additional short push-fit pin at the next fastening point with a tooth-lock washer and a hex nut.",
+      "check_type": "presence",
+      "expected_duration_seconds": null,
+      "section": "STEP 3 Secondary fastening",
+      "visual_references": []
+    },
+    {
+      "step_id": "step-004",
+      "sequence": 4,
+      "description": "Attach the wing beam and secure it in place with screw pins, a round washer, and an acorn nut.",
+      "check_type": "presence",
+      "expected_duration_seconds": null,
+      "section": "STEP 4 Wing beam",
+      "visual_references": []
+    },
+    {
+      "step_id": "step-005",
+      "sequence": 5,
+      "description": "Mount both wings and their wheels onto long pins and secure them with round washers, tooth-lock washers, and hex nuts.",
+      "check_type": "presence",
+      "expected_duration_seconds": null,
+      "section": "STEP 5 Wings and wheels",
+      "visual_references": []
+    },
+    {
+      "step_id": "step-006",
+      "sequence": 6,
+      "description": "Install the middle pin, mount a wheel and fit the pulley onto it, then secure with a round washer, a tooth-lock washer, and a hex nut.",
+      "check_type": "presence",
+      "expected_duration_seconds": null,
+      "section": "STEP 6 Pulley assembly",
+      "visual_references": []
+    }
+  ]
+}

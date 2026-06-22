@@ -1,0 +1,773 @@
+[
+  {
+    "run_id": "probe-run-1",
+    "video_url": "C:\\Users\\priya\\OneDrive\\Documents\\MS_Internship\\procedureguard\\industreal_selected\\videos\\baselines\\23_assy_0_1.mp4",
+    "video_duration_seconds": 260.2,
+    "segments": [
+      {
+        "segment_id": "seg-001",
+        "start_time_seconds": 0.0,
+        "end_time_seconds": 25.0,
+        "description": "",
+        "ppe_status": "not-visible",
+        "tool_in_use": null,
+        "component_contact": "A white perforated beam is being held and a gray push-fit pin is inserted into one of its holes.",
+        "visible_safety_concern": false,
+        "action_observed": "A gray push-fit pin is inserted into a hole of a white perforated beam, and a pink connector is being placed into another hole.",
+        "observed_items": [
+          {
+            "item_id": "check-003",
+            "confidence": 0.9
+          }
+        ]
+      },
+      {
+        "segment_id": "seg-002",
+        "start_time_seconds": 19.0,
+        "end_time_seconds": 44.0,
+        "description": "",
+        "ppe_status": "not-visible",
+        "tool_in_use": null,
+        "component_contact": "A white perforated beam is being joined with a gray push-fit pin and a pink connector.",
+        "visible_safety_concern": false,
+        "action_observed": "The user inserts a gray push-fit pin into a hole on a white perforated beam and secures it with a pink connector.",
+        "observed_items": [
+          {
+            "item_id": "check-003",
+            "confidence": 0.9
+          }
+        ]
+      },
+      {
+        "segment_id": "seg-003",
+        "start_time_seconds": 38.0,
+        "end_time_seconds": 63.0,
+        "description": "",
+        "ppe_status": "not-visible",
+        "tool_in_use": null,
+        "component_contact": "A white perforated beam is being held and aligned with another white perforated beam, and a pink connector is being inserted into one of the holes.",
+        "visible_safety_concern": false,
+        "action_observed": "The worker is inserting a pink connector into a hole of a white perforated beam while aligning it with another white perforated beam.",
+        "observed_items": [
+          {
+            "item_id": "check-001",
+            "confidence": 0.9
+          }
+        ]
+      },
+      {
+        "segment_id": "seg-004",
+        "start_time_seconds": 57.0,
+        "end_time_seconds": 82.0,
+        "description": "",
+        "ppe_status": "not-visible",
+        "tool_in_use": "null",
+        "component_contact": "A white perforated beam and pink connector are being joined.",
+        "visible_safety_concern": false,
+        "action_observed": "The user is pressing a pink connector into a hole on a white perforated beam.",
+        "observed_items": [
+          {
+            "item_id": "check-001",
+            "confidence": 0.8
+          },
+          {
+            "item_id": "check-002",
+            "confidence": 0.7
+          }
+        ]
+      },
+      {
+        "segment_id": "seg-005",
+        "start_time_seconds": 76.0,
+        "end_time_seconds": 101.0,
+        "description": "",
+        "ppe_status": "not-visible",
+        "tool_in_use": null,
+        "component_contact": "A white perforated beam is being held and a gray pin is being inserted into one of its holes.",
+        "visible_safety_concern": false,
+        "action_observed": "A gray pin is being inserted into a hole on a white perforated beam, aligning it with the assembly.",
+        "observed_items": [
+          {
+            "item_id": "check-003",
+            "confidence": 0.9
+          }
+        ]
+      },
+      {
+        "segment_id": "seg-006",
+        "start_time_seconds": 95.0,
+        "end_time_seconds": 120.0,
+        "description": "",
+        "ppe_status": "not-visible",
+        "tool_in_use": null,
+        "component_contact": "A white perforated beam is being held and aligned with another white perforated beam, and a pink connector is being inserted into one of the holes.",
+        "visible_safety_concern": false,
+        "action_observed": "The assembler is inserting a pink connector into a hole on a white perforated beam while aligning it with another white perforated beam.",
+        "observed_items": [
+          {
+            "item_id": "check-001",
+            "confidence": 0.8
+          },
+          {
+            "item_id": "check-003",
+            "confidence": 0.7
+          }
+        ]
+      },
+      {
+        "segment_id": "seg-007",
+        "start_time_seconds": 114.0,
+        "end_time_seconds": 139.0,
+        "description": "",
+        "ppe_status": "not-visible",
+        "tool_in_use": null,
+        "component_contact": "A pink push-fit pin is being inserted into a white perforated beam.",
+        "visible_safety_concern": false,
+        "action_observed": "The assembler is inserting a pink push-fit pin into one of the holes of a white perforated beam, aligning it with the beam's structure.",
+        "observed_items": [
+          {
+            "item_id": "check-003",
+            "confidence": 0.9
+          }
+        ]
+      },
+      {
+        "segment_id": "seg-008",
+        "start_time_seconds": 133.0,
+        "end_time_seconds": 158.0,
+        "description": "",
+        "ppe_status": "not-visible",
+        "tool_in_use": null,
+        "component_contact": "A black wheel is being mounted onto a long gray pin.",
+        "visible_safety_concern": false,
+        "action_observed": "A black wheel is aligned and pressed onto a long gray pin extending from the white assembly frame.",
+        "observed_items": [
+          {
+            "item_id": "check-005",
+            "confidence": 0.9
+          }
+        ]
+      },
+      {
+        "segment_id": "seg-009",
+        "start_time_seconds": 152.0,
+        "end_time_seconds": 177.0,
+        "description": "",
+        "ppe_status": "not-visible",
+        "tool_in_use": null,
+        "component_contact": "A black wheel is being mounted onto a gray pin, and pink spacers are being used to secure it.",
+        "visible_safety_concern": false,
+        "action_observed": "A black wheel is slid onto a gray pin, followed by pink spacers to secure the wheel in place.",
+        "observed_items": [
+          {
+            "item_id": "check-005",
+            "confidence": 0.9
+          }
+        ]
+      },
+      {
+        "segment_id": "seg-010",
+        "start_time_seconds": 171.0,
+        "end_time_seconds": 196.0,
+        "description": "",
+        "ppe_status": "not-visible",
+        "tool_in_use": null,
+        "component_contact": "A black wheel is being mounted onto a pink connector attached to a white perforated beam.",
+        "visible_safety_concern": false,
+        "action_observed": "The assembler is pressing a black wheel onto a pink connector that is fixed to a white perforated beam.",
+        "observed_items": [
+          {
+            "item_id": "check-005",
+            "confidence": 0.9
+          }
+        ]
+      },
+      {
+        "segment_id": "seg-011",
+        "start_time_seconds": 190.0,
+        "end_time_seconds": 215.0,
+        "description": "",
+        "ppe_status": "not-visible",
+        "tool_in_use": null,
+        "component_contact": "A black wheel is being mounted onto a pink pin on the white perforated base frame.",
+        "visible_safety_concern": false,
+        "action_observed": "The assembler is pressing a black wheel onto a pink pin that is already inserted into the white perforated base frame.",
+        "observed_items": [
+          {
+            "item_id": "check-005",
+            "confidence": 0.9
+          }
+        ]
+      },
+      {
+        "segment_id": "seg-012",
+        "start_time_seconds": 209.0,
+        "end_time_seconds": 234.0,
+        "description": "",
+        "ppe_status": "not-visible",
+        "tool_in_use": null,
+        "component_contact": "A black wheel is being mounted onto a gray pin.",
+        "visible_safety_concern": false,
+        "action_observed": "The assembler is inserting a gray pin through the center hole of a black wheel and securing it.",
+        "observed_items": [
+          {
+            "item_id": "check-005",
+            "confidence": 0.9
+          }
+        ]
+      },
+      {
+        "segment_id": "seg-013",
+        "start_time_seconds": 228.0,
+        "end_time_seconds": 253.0,
+        "description": "",
+        "ppe_status": "not-visible",
+        "tool_in_use": null,
+        "component_contact": "A black wheel is being mounted onto a gray pin, and the pin is inserted into a white perforated beam.",
+        "visible_safety_concern": false,
+        "action_observed": "The assembler is inserting a gray pin through the center of a black wheel and attaching it to a white perforated beam.",
+        "observed_items": [
+          {
+            "item_id": "check-005",
+            "confidence": 0.9
+          }
+        ]
+      },
+      {
+        "segment_id": "seg-014",
+        "start_time_seconds": 247.0,
+        "end_time_seconds": 260.2,
+        "description": "",
+        "ppe_status": "not-visible",
+        "tool_in_use": null,
+        "component_contact": "A pink connector is being pressed onto a white perforated beam near the rear axle.",
+        "visible_safety_concern": false,
+        "action_observed": "The assembler is pressing a pink connector onto a white perforated beam near the rear axle of the assembly.",
+        "observed_items": [
+          {
+            "item_id": "check-001",
+            "confidence": 0.9
+          },
+          {
+            "item_id": "check-005",
+            "confidence": 0.8
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "run_id": "probe-run-2",
+    "video_url": "C:\\Users\\priya\\OneDrive\\Documents\\MS_Internship\\procedureguard\\industreal_selected\\videos\\baselines\\23_assy_0_1.mp4",
+    "video_duration_seconds": 260.2,
+    "segments": [
+      {
+        "segment_id": "seg-001",
+        "start_time_seconds": 0.0,
+        "end_time_seconds": 25.0,
+        "description": "",
+        "ppe_status": "not-visible",
+        "tool_in_use": null,
+        "component_contact": "A white perforated beam with circular holes is being handled, and a gray cylindrical pin is inserted into one of the holes.",
+        "visible_safety_concern": false,
+        "action_observed": "A gray cylindrical pin is inserted into a circular hole of a white perforated beam, and a pink connector is being placed into another hole.",
+        "observed_items": [
+          {
+            "item_id": "check-003",
+            "confidence": 0.9
+          }
+        ]
+      },
+      {
+        "segment_id": "seg-002",
+        "start_time_seconds": 19.0,
+        "end_time_seconds": 44.0,
+        "description": "",
+        "ppe_status": "not-visible",
+        "tool_in_use": null,
+        "component_contact": "A white perforated beam is being held, and a gray push-fit pin is being inserted into one of its holes.",
+        "visible_safety_concern": false,
+        "action_observed": "A gray push-fit pin is being inserted into a hole on a white perforated beam by hand.",
+        "observed_items": [
+          {
+            "item_id": "check-003",
+            "confidence": 0.9
+          }
+        ]
+      },
+      {
+        "segment_id": "seg-003",
+        "start_time_seconds": 38.0,
+        "end_time_seconds": 63.0,
+        "description": "",
+        "ppe_status": "not-visible",
+        "tool_in_use": null,
+        "component_contact": "A white perforated beam is being joined to another white perforated beam using a pink connector.",
+        "visible_safety_concern": false,
+        "action_observed": "The user is pressing a pink connector into aligned holes of two white perforated beams to join them together.",
+        "observed_items": [
+          {
+            "item_id": "check-001",
+            "confidence": 0.8
+          }
+        ]
+      },
+      {
+        "segment_id": "seg-004",
+        "start_time_seconds": 57.0,
+        "end_time_seconds": 82.0,
+        "description": "",
+        "ppe_status": "not-visible",
+        "tool_in_use": "null",
+        "component_contact": "A white perforated beam and pink connectors are being joined together.",
+        "visible_safety_concern": false,
+        "action_observed": "The user is inserting pink connectors into the holes of a white perforated beam and aligning them.",
+        "observed_items": [
+          {
+            "item_id": "check-002",
+            "confidence": 0.8
+          },
+          {
+            "item_id": "check-003",
+            "confidence": 0.7
+          }
+        ]
+      },
+      {
+        "segment_id": "seg-005",
+        "start_time_seconds": 76.0,
+        "end_time_seconds": 101.0,
+        "description": "",
+        "ppe_status": "not-visible",
+        "tool_in_use": null,
+        "component_contact": "A white perforated beam is being joined with gray pins and pink connectors.",
+        "visible_safety_concern": false,
+        "action_observed": "A gray pin is inserted through aligned holes in a white perforated beam and secured with pink connectors.",
+        "observed_items": [
+          {
+            "item_id": "check-001",
+            "confidence": 0.9
+          },
+          {
+            "item_id": "check-002",
+            "confidence": 0.8
+          },
+          {
+            "item_id": "check-003",
+            "confidence": 0.7
+          }
+        ]
+      },
+      {
+        "segment_id": "seg-006",
+        "start_time_seconds": 95.0,
+        "end_time_seconds": 120.0,
+        "description": "",
+        "ppe_status": "not-visible",
+        "tool_in_use": null,
+        "component_contact": "A white perforated beam is being held and aligned with another white perforated beam, and a pink connector is being inserted into one of the holes.",
+        "visible_safety_concern": false,
+        "action_observed": "The assembler is inserting a pink connector into a hole on a white perforated beam while aligning it with another white perforated beam.",
+        "observed_items": [
+          {
+            "item_id": "check-001",
+            "confidence": 0.8
+          }
+        ]
+      },
+      {
+        "segment_id": "seg-007",
+        "start_time_seconds": 114.0,
+        "end_time_seconds": 139.0,
+        "description": "",
+        "ppe_status": "not-visible",
+        "tool_in_use": null,
+        "component_contact": "A pink cylindrical connector is being inserted into a white perforated beam with multiple holes.",
+        "visible_safety_concern": false,
+        "action_observed": "The worker is inserting a pink cylindrical connector into a hole on a white perforated beam, aligning it with the beam's structure.",
+        "observed_items": [
+          {
+            "item_id": "check-003",
+            "confidence": 0.9
+          }
+        ]
+      },
+      {
+        "segment_id": "seg-008",
+        "start_time_seconds": 133.0,
+        "end_time_seconds": 158.0,
+        "description": "",
+        "ppe_status": "not-visible",
+        "tool_in_use": null,
+        "component_contact": "A black wheel is being mounted onto a long gray pin.",
+        "visible_safety_concern": false,
+        "action_observed": "A black wheel is aligned and pressed onto a long gray pin, securing it in place.",
+        "observed_items": [
+          {
+            "item_id": "check-005",
+            "confidence": 0.9
+          }
+        ]
+      },
+      {
+        "segment_id": "seg-009",
+        "start_time_seconds": 152.0,
+        "end_time_seconds": 177.0,
+        "description": "",
+        "ppe_status": "not-visible",
+        "tool_in_use": null,
+        "component_contact": "A black wheel is being mounted onto a gray pin, and pink spacers are being used to secure the wheel.",
+        "visible_safety_concern": false,
+        "action_observed": "A black wheel is slid onto a gray pin, and pink spacers are added to secure the wheel in place.",
+        "observed_items": [
+          {
+            "item_id": "check-005",
+            "confidence": 0.9
+          }
+        ]
+      },
+      {
+        "segment_id": "seg-010",
+        "start_time_seconds": 171.0,
+        "end_time_seconds": 196.0,
+        "description": "",
+        "ppe_status": "not-visible",
+        "tool_in_use": null,
+        "component_contact": "A black wheel is being mounted onto a pink connector attached to the white base frame.",
+        "visible_safety_concern": false,
+        "action_observed": "The assembler is pressing a black wheel onto a pink connector, which is fixed to the white perforated base frame.",
+        "observed_items": [
+          {
+            "item_id": "check-005",
+            "confidence": 0.9
+          }
+        ]
+      },
+      {
+        "segment_id": "seg-011",
+        "start_time_seconds": 190.0,
+        "end_time_seconds": 215.0,
+        "description": "",
+        "ppe_status": "not-visible",
+        "tool_in_use": null,
+        "component_contact": "A black wheel is being mounted onto a pink pin on the white perforated base frame.",
+        "visible_safety_concern": false,
+        "action_observed": "The assembler is pressing a black wheel onto a pink pin that is attached to the white perforated base frame.",
+        "observed_items": [
+          {
+            "item_id": "check-005",
+            "confidence": 0.9
+          }
+        ]
+      },
+      {
+        "segment_id": "seg-012",
+        "start_time_seconds": 209.0,
+        "end_time_seconds": 234.0,
+        "description": "",
+        "ppe_status": "not-visible",
+        "tool_in_use": null,
+        "component_contact": "A black wheel is being mounted onto a gray pin.",
+        "visible_safety_concern": false,
+        "action_observed": "The assembler is inserting a gray pin through the center hole of a black wheel and aligning it with the assembly.",
+        "observed_items": [
+          {
+            "item_id": "check-005",
+            "confidence": 0.9
+          }
+        ]
+      },
+      {
+        "segment_id": "seg-013",
+        "start_time_seconds": 228.0,
+        "end_time_seconds": 253.0,
+        "description": "",
+        "ppe_status": "not-visible",
+        "tool_in_use": null,
+        "component_contact": "A black wheel is being mounted onto a gray pin with a pink connector.",
+        "visible_safety_concern": false,
+        "action_observed": "The assembler is inserting a gray pin through the center of a black wheel and securing it with a pink connector.",
+        "observed_items": [
+          {
+            "item_id": "check-005",
+            "confidence": 0.9
+          }
+        ]
+      },
+      {
+        "segment_id": "seg-014",
+        "start_time_seconds": 247.0,
+        "end_time_seconds": 260.2,
+        "description": "",
+        "ppe_status": "not-visible",
+        "tool_in_use": null,
+        "component_contact": "A pink connector is being pressed onto a white perforated beam near the rear axle.",
+        "visible_safety_concern": false,
+        "action_observed": "The assembler is pressing a pink connector onto a white perforated beam, aligning it with the rear axle.",
+        "observed_items": [
+          {
+            "item_id": "check-001",
+            "confidence": 0.8
+          },
+          {
+            "item_id": "check-005",
+            "confidence": 0.7
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "run_id": "probe-run-3",
+    "video_url": "C:\\Users\\priya\\OneDrive\\Documents\\MS_Internship\\procedureguard\\industreal_selected\\videos\\baselines\\23_assy_0_1.mp4",
+    "video_duration_seconds": 260.2,
+    "segments": [
+      {
+        "segment_id": "seg-001",
+        "start_time_seconds": 0.0,
+        "end_time_seconds": 25.0,
+        "description": "",
+        "ppe_status": "not-visible",
+        "tool_in_use": null,
+        "component_contact": "A white perforated beam with circular holes is being handled, and a gray push-fit pin is inserted into one of the holes.",
+        "visible_safety_concern": false,
+        "action_observed": "A gray push-fit pin is inserted into a circular hole of a white perforated beam, and a pink connector is being positioned into another hole.",
+        "observed_items": [
+          {
+            "item_id": "check-003",
+            "confidence": 0.9
+          }
+        ]
+      },
+      {
+        "segment_id": "seg-002",
+        "start_time_seconds": 19.0,
+        "end_time_seconds": 44.0,
+        "description": "",
+        "ppe_status": "not-visible",
+        "tool_in_use": null,
+        "component_contact": "A white perforated beam is being joined with a pink connector and gray push-fit pins.",
+        "visible_safety_concern": false,
+        "action_observed": "A pink connector is being pressed into a hole on a white perforated beam, and gray push-fit pins are inserted into other holes.",
+        "observed_items": [
+          {
+            "item_id": "check-001",
+            "confidence": 0.8
+          },
+          {
+            "item_id": "check-003",
+            "confidence": 0.7
+          }
+        ]
+      },
+      {
+        "segment_id": "seg-003",
+        "start_time_seconds": 38.0,
+        "end_time_seconds": 63.0,
+        "description": "",
+        "ppe_status": "not-visible",
+        "tool_in_use": null,
+        "component_contact": "A white perforated beam is being joined to another white perforated beam using a pink connector.",
+        "visible_safety_concern": false,
+        "action_observed": "The assembler is pressing a pink connector into aligned holes of two white perforated beams to join them.",
+        "observed_items": [
+          {
+            "item_id": "check-001",
+            "confidence": 0.8
+          }
+        ]
+      },
+      {
+        "segment_id": "seg-004",
+        "start_time_seconds": 57.0,
+        "end_time_seconds": 82.0,
+        "description": "",
+        "ppe_status": "not-visible",
+        "tool_in_use": "null",
+        "component_contact": "A pink connector is being pressed into a white perforated beam.",
+        "visible_safety_concern": false,
+        "action_observed": "The assembler is pressing a pink connector into one of the holes of a white perforated beam.",
+        "observed_items": [
+          {
+            "item_id": "check-003",
+            "confidence": 0.9
+          }
+        ]
+      },
+      {
+        "segment_id": "seg-005",
+        "start_time_seconds": 76.0,
+        "end_time_seconds": 101.0,
+        "description": "",
+        "ppe_status": "not-visible",
+        "tool_in_use": null,
+        "component_contact": "A white perforated beam is being joined with a gray pin through one of its holes.",
+        "visible_safety_concern": false,
+        "action_observed": "A gray pin is inserted into a hole on a white perforated beam, aligning it with the assembly.",
+        "observed_items": [
+          {
+            "item_id": "check-003",
+            "confidence": 0.9
+          }
+        ]
+      },
+      {
+        "segment_id": "seg-006",
+        "start_time_seconds": 95.0,
+        "end_time_seconds": 120.0,
+        "description": "",
+        "ppe_status": "not-visible",
+        "tool_in_use": null,
+        "component_contact": "A white perforated beam is being held and aligned with another white perforated beam, and a pink connector is being pressed into place.",
+        "visible_safety_concern": false,
+        "action_observed": "The assembler is pressing a pink connector into a hole on a white perforated beam, aligning it with another beam.",
+        "observed_items": [
+          {
+            "item_id": "check-001",
+            "confidence": 0.9
+          }
+        ]
+      },
+      {
+        "segment_id": "seg-007",
+        "start_time_seconds": 114.0,
+        "end_time_seconds": 139.0,
+        "description": "",
+        "ppe_status": "not-visible",
+        "tool_in_use": null,
+        "component_contact": "A pink connector is being inserted into a white perforated beam.",
+        "visible_safety_concern": false,
+        "action_observed": "The assembler is inserting a pink connector into one of the holes of a white perforated beam, aligning it with the beam's structure.",
+        "observed_items": [
+          {
+            "item_id": "check-003",
+            "confidence": 0.9
+          }
+        ]
+      },
+      {
+        "segment_id": "seg-008",
+        "start_time_seconds": 133.0,
+        "end_time_seconds": 158.0,
+        "description": "",
+        "ppe_status": "not-visible",
+        "tool_in_use": null,
+        "component_contact": "A black wheel is being mounted onto a long gray pin.",
+        "visible_safety_concern": false,
+        "action_observed": "A black wheel is being slid onto a long gray pin, aligning the central hole of the wheel with the pin.",
+        "observed_items": [
+          {
+            "item_id": "check-005",
+            "confidence": 0.9
+          }
+        ]
+      },
+      {
+        "segment_id": "seg-009",
+        "start_time_seconds": 152.0,
+        "end_time_seconds": 177.0,
+        "description": "",
+        "ppe_status": "not-visible",
+        "tool_in_use": null,
+        "component_contact": "A black wheel is being mounted onto a gray pin, and pink spacers are being used to secure it.",
+        "visible_safety_concern": false,
+        "action_observed": "The assembler is sliding a black wheel onto a gray pin and securing it with pink spacers.",
+        "observed_items": [
+          {
+            "item_id": "check-005",
+            "confidence": 0.9
+          }
+        ]
+      },
+      {
+        "segment_id": "seg-010",
+        "start_time_seconds": 171.0,
+        "end_time_seconds": 196.0,
+        "description": "",
+        "ppe_status": "not-visible",
+        "tool_in_use": null,
+        "component_contact": "A black wheel is being mounted onto a pink connector attached to a white perforated beam.",
+        "visible_safety_concern": false,
+        "action_observed": "The assembler is pressing a black wheel onto a pink connector, which is fixed to a white perforated beam.",
+        "observed_items": [
+          {
+            "item_id": "check-005",
+            "confidence": 0.9
+          }
+        ]
+      },
+      {
+        "segment_id": "seg-011",
+        "start_time_seconds": 190.0,
+        "end_time_seconds": 215.0,
+        "description": "",
+        "ppe_status": "not-visible",
+        "tool_in_use": null,
+        "component_contact": "A black wheel is being mounted onto a pink pin on the white perforated base frame.",
+        "visible_safety_concern": false,
+        "action_observed": "The assembler is pressing a black wheel onto a pink pin that is attached to the white perforated base frame.",
+        "observed_items": [
+          {
+            "item_id": "check-005",
+            "confidence": 0.9
+          }
+        ]
+      },
+      {
+        "segment_id": "seg-012",
+        "start_time_seconds": 209.0,
+        "end_time_seconds": 234.0,
+        "description": "",
+        "ppe_status": "not-visible",
+        "tool_in_use": null,
+        "component_contact": "A black wheel is being mounted onto a gray pin.",
+        "visible_safety_concern": false,
+        "action_observed": "The assembler is inserting a gray pin through the center hole of a black wheel and aligning it with the assembly.",
+        "observed_items": [
+          {
+            "item_id": "check-005",
+            "confidence": 0.9
+          }
+        ]
+      },
+      {
+        "segment_id": "seg-013",
+        "start_time_seconds": 228.0,
+        "end_time_seconds": 253.0,
+        "description": "",
+        "ppe_status": "not-visible",
+        "tool_in_use": null,
+        "component_contact": "A black wheel is being mounted onto a gray pin, which is inserted into a pink connector on a white perforated beam.",
+        "visible_safety_concern": false,
+        "action_observed": "The assembler is inserting a gray pin through the center of a black wheel and attaching it to a pink connector on a white perforated beam.",
+        "observed_items": [
+          {
+            "item_id": "check-005",
+            "confidence": 0.9
+          }
+        ]
+      },
+      {
+        "segment_id": "seg-014",
+        "start_time_seconds": 247.0,
+        "end_time_seconds": 260.2,
+        "description": "",
+        "ppe_status": "not-visible",
+        "tool_in_use": null,
+        "component_contact": "A pink connector is being pressed onto a white perforated beam near the rear axle.",
+        "visible_safety_concern": false,
+        "action_observed": "The assembler is pressing a pink connector onto the white perforated beam near the rear axle.",
+        "observed_items": [
+          {
+            "item_id": "check-001",
+            "confidence": 0.8
+          },
+          {
+            "item_id": "check-005",
+            "confidence": 0.7
+          }
+        ]
+      }
+    ]
+  }
+]

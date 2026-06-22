@@ -1,0 +1,528 @@
+{
+  "run_id": "validate-20260620-f17882",
+  "clip_id": "23_assy_0_1",
+  "sop_steps": {
+    "run_id": "sop-gt-v2",
+    "sop_document": "STEMFIE_vehicle_kit_assembly_GTgrounded.pdf",
+    "extracted_at": "2026-06-19T05:58:08.785406+00:00",
+    "total_steps": 7,
+    "steps": [
+      {
+        "step_id": "step-001",
+        "sequence": 1,
+        "description": "Mount the short braces onto the base frame and secure them with a short push-fit pin, a tooth-lock washer, and a hex nut.",
+        "check_type": "presence",
+        "expected_duration_seconds": null,
+        "section": "STEP 1 Base frame",
+        "visual_references": []
+      },
+      {
+        "step_id": "step-002",
+        "sequence": 2,
+        "description": "Attach the long brace to the assembly, align it, and secure it with a short push-fit pin, a tooth-lock washer, and a hex nut.",
+        "check_type": "presence",
+        "expected_duration_seconds": null,
+        "section": "STEP 2 Long brace",
+        "visual_references": []
+      },
+      {
+        "step_id": "step-003",
+        "sequence": 3,
+        "description": "Install an additional short push-fit pin at the next fastening point with a tooth-lock washer and a hex nut.",
+        "check_type": "presence",
+        "expected_duration_seconds": null,
+        "section": "STEP 3 Secondary fastening",
+        "visual_references": []
+      },
+      {
+        "step_id": "step-004",
+        "sequence": 4,
+        "description": "Attach the wing beam and secure it in place with screw pins, a round washer, and an acorn nut.",
+        "check_type": "presence",
+        "expected_duration_seconds": null,
+        "section": "STEP 4 Wing beam",
+        "visual_references": []
+      },
+      {
+        "step_id": "step-005",
+        "sequence": 5,
+        "description": "Mount the first wing and wheel onto a long pin and secure them with round washers, a tooth-lock washer, and a hex nut.",
+        "check_type": "presence",
+        "expected_duration_seconds": null,
+        "section": "STEP 5 First wing and wheel",
+        "visual_references": []
+      },
+      {
+        "step_id": "step-006",
+        "sequence": 6,
+        "description": "Mount the second wing and wheel onto a long pin and secure them with round washers.",
+        "check_type": "presence",
+        "expected_duration_seconds": null,
+        "section": "STEP 6 Second wing and wheel",
+        "visual_references": []
+      },
+      {
+        "step_id": "step-007",
+        "sequence": 7,
+        "description": "Install the middle pin, mount a wheel and fit the pulley onto it, then secure with a round washer, a tooth-lock washer, and a hex nut.",
+        "check_type": "presence",
+        "expected_duration_seconds": null,
+        "section": "STEP 7 Pulley assembly",
+        "visual_references": []
+      }
+    ]
+  },
+  "checklist": {
+    "run_id": "sop-gt-v3",
+    "sop_document": "STEMFIE_vehicle_kit_assembly_GTgrounded.pdf",
+    "created_at": "2026-06-19T05:58:16.111307+00:00",
+    "total_items": 6,
+    "items": [
+      {
+        "item_id": "check-001",
+        "step_id": "step-001",
+        "sequence": 1,
+        "criterion": "The short braces must be mounted onto the base frame and secured with a short push-fit pin, a tooth-lock washer, and a hex nut.",
+        "observable_action": "The short braces are mounted onto the base frame.",
+        "key_objects": [],
+        "verifiability": "presence",
+        "check_type": "presence",
+        "expected_duration_seconds": null,
+        "sop_section": "STEP 1 Base frame"
+      },
+      {
+        "item_id": "check-002",
+        "step_id": "step-002",
+        "sequence": 2,
+        "criterion": "The long brace must be attached to the assembly, aligned, and secured with a short push-fit pin, a tooth-lock washer, and a hex nut.",
+        "observable_action": "The long brace is attached to the assembly.",
+        "key_objects": [],
+        "verifiability": "presence",
+        "check_type": "presence",
+        "expected_duration_seconds": null,
+        "sop_section": "STEP 2 Long brace"
+      },
+      {
+        "item_id": "check-003",
+        "step_id": "step-003",
+        "sequence": 3,
+        "criterion": "An additional short push-fit pin must be installed at the next fastening point with a tooth-lock washer and a hex nut.",
+        "observable_action": "An additional short push-fit pin is installed at the next fastening point.",
+        "key_objects": [],
+        "verifiability": "presence",
+        "check_type": "presence",
+        "expected_duration_seconds": null,
+        "sop_section": "STEP 3 Secondary fastening"
+      },
+      {
+        "item_id": "check-004",
+        "step_id": "step-004",
+        "sequence": 4,
+        "criterion": "The wing beam must be attached and secured in place with screw pins, a round washer, and an acorn nut.",
+        "observable_action": "The wing beam is attached and secured in place.",
+        "key_objects": [],
+        "verifiability": "presence",
+        "check_type": "presence",
+        "expected_duration_seconds": null,
+        "sop_section": "STEP 4 Wing beam"
+      },
+      {
+        "item_id": "check-005",
+        "step_id": "step-005",
+        "sequence": 5,
+        "criterion": "Both wings and their wheels must be mounted onto long pins and secured with round washers, tooth-lock washers, and hex nuts.",
+        "observable_action": "Wings and wheels are mounted onto long pins.",
+        "key_objects": [
+          "wing",
+          "wheel"
+        ],
+        "verifiability": "presence",
+        "check_type": "presence",
+        "expected_duration_seconds": null,
+        "sop_section": "STEP 5 Wings and wheels"
+      },
+      {
+        "item_id": "check-006",
+        "step_id": "step-007",
+        "sequence": 6,
+        "criterion": "The middle pin must be installed, a wheel mounted, and the pulley fitted onto it, then secured with a round washer, a tooth-lock washer, and a hex nut.",
+        "observable_action": "The middle pin is installed, a wheel is mounted, and the pulley is fitted onto it.",
+        "key_objects": [
+          "middle pin",
+          "pulley"
+        ],
+        "verifiability": "presence",
+        "check_type": "presence",
+        "expected_duration_seconds": null,
+        "sop_section": "STEP 6 Pulley assembly"
+      }
+    ]
+  },
+  "observations": {
+    "run_id": "validate-20260620-f17882",
+    "video_url": "C:\\Users\\priya\\OneDrive\\Documents\\MS_Internship\\procedureguard\\industreal_selected\\videos\\baselines\\23_assy_0_1.mp4",
+    "video_duration_seconds": 260.2,
+    "segments": [
+      {
+        "segment_id": "seg-001",
+        "start_time_seconds": 0.0,
+        "end_time_seconds": 25.0,
+        "description": "",
+        "ppe_status": "not-visible",
+        "tool_in_use": null,
+        "component_contact": "A white perforated beam with circular holes is being handled, and a gray push-fit pin is inserted into one of the holes.",
+        "visible_safety_concern": false,
+        "action_observed": "A gray push-fit pin is inserted into a circular hole of a white perforated beam, aligning it with the hole.",
+        "observed_items": [
+          {
+            "item_id": "check-003",
+            "confidence": 0.9
+          }
+        ]
+      },
+      {
+        "segment_id": "seg-002",
+        "start_time_seconds": 19.0,
+        "end_time_seconds": 44.0,
+        "description": "",
+        "ppe_status": "not-visible",
+        "tool_in_use": null,
+        "component_contact": "A white perforated beam is being joined with a pink connector and gray push-fit pins.",
+        "visible_safety_concern": false,
+        "action_observed": "The user is inserting gray push-fit pins into holes on a white perforated beam and attaching a pink connector to the beam.",
+        "observed_items": [
+          {
+            "item_id": "check-003",
+            "confidence": 0.9
+          }
+        ]
+      },
+      {
+        "segment_id": "seg-003",
+        "start_time_seconds": 38.0,
+        "end_time_seconds": 63.0,
+        "description": "",
+        "ppe_status": "not-visible",
+        "tool_in_use": null,
+        "component_contact": "A white perforated beam is being held and aligned with another white perforated beam. A pink connector is being inserted into one of the holes.",
+        "visible_safety_concern": false,
+        "action_observed": "The worker is manually inserting a pink connector into a hole of a white perforated beam while aligning it with another white perforated beam.",
+        "observed_items": [
+          {
+            "item_id": "check-001",
+            "confidence": 0.9
+          }
+        ]
+      },
+      {
+        "segment_id": "seg-004",
+        "start_time_seconds": 57.0,
+        "end_time_seconds": 82.0,
+        "description": "",
+        "ppe_status": "not-visible",
+        "tool_in_use": "gray cylindrical pin",
+        "component_contact": "white perforated beam and pink connector",
+        "visible_safety_concern": false,
+        "action_observed": "A gray cylindrical pin is being inserted into a hole on a white perforated beam, securing a pink connector in place.",
+        "observed_items": [
+          {
+            "item_id": "check-003",
+            "confidence": 0.9
+          }
+        ]
+      },
+      {
+        "segment_id": "seg-005",
+        "start_time_seconds": 76.0,
+        "end_time_seconds": 101.0,
+        "description": "",
+        "ppe_status": "not-visible",
+        "tool_in_use": null,
+        "component_contact": "A white perforated beam is being held and aligned with gray pins and pink connectors.",
+        "visible_safety_concern": false,
+        "action_observed": "A gray pin is being inserted into a hole on a white perforated beam, and pink connectors are being attached to the beam.",
+        "observed_items": [
+          {
+            "item_id": "check-001",
+            "confidence": 0.8
+          },
+          {
+            "item_id": "check-002",
+            "confidence": 0.7
+          },
+          {
+            "item_id": "check-003",
+            "confidence": 0.9
+          }
+        ]
+      },
+      {
+        "segment_id": "seg-006",
+        "start_time_seconds": 95.0,
+        "end_time_seconds": 120.0,
+        "description": "",
+        "ppe_status": "not-visible",
+        "tool_in_use": null,
+        "component_contact": "A white perforated beam is being held and aligned with a gray pin and pink connector.",
+        "visible_safety_concern": false,
+        "action_observed": "The assembler is aligning a white perforated beam with a gray pin and pink connector, preparing to fasten them together.",
+        "observed_items": [
+          {
+            "item_id": "check-002",
+            "confidence": 0.8
+          }
+        ]
+      },
+      {
+        "segment_id": "seg-007",
+        "start_time_seconds": 114.0,
+        "end_time_seconds": 139.0,
+        "description": "",
+        "ppe_status": "not-visible",
+        "tool_in_use": null,
+        "component_contact": "A pink push-fit pin is being inserted into a white perforated beam with multiple holes.",
+        "visible_safety_concern": false,
+        "action_observed": "The worker is inserting a pink push-fit pin into a hole on a white perforated beam, aligning it with the beam's structure.",
+        "observed_items": [
+          {
+            "item_id": "check-003",
+            "confidence": 0.9
+          }
+        ]
+      },
+      {
+        "segment_id": "seg-008",
+        "start_time_seconds": 133.0,
+        "end_time_seconds": 158.0,
+        "description": "",
+        "ppe_status": "not-visible",
+        "tool_in_use": null,
+        "component_contact": "A black wheel is being mounted onto a long gray pin.",
+        "visible_safety_concern": false,
+        "action_observed": "The assembler is sliding a black wheel onto a long gray pin, aligning the pin through the wheel's central hole.",
+        "observed_items": [
+          {
+            "item_id": "check-005",
+            "confidence": 0.9
+          }
+        ]
+      },
+      {
+        "segment_id": "seg-009",
+        "start_time_seconds": 152.0,
+        "end_time_seconds": 177.0,
+        "description": "",
+        "ppe_status": "not-visible",
+        "tool_in_use": null,
+        "component_contact": "A black wheel is being mounted onto a gray pin, which is inserted into a white perforated beam.",
+        "visible_safety_concern": false,
+        "action_observed": "A black wheel is being pressed onto a gray pin that is inserted through a white perforated beam, securing the wheel in place.",
+        "observed_items": [
+          {
+            "item_id": "check-005",
+            "confidence": 0.9
+          }
+        ]
+      },
+      {
+        "segment_id": "seg-010",
+        "start_time_seconds": 171.0,
+        "end_time_seconds": 196.0,
+        "description": "",
+        "ppe_status": "not-visible",
+        "tool_in_use": null,
+        "component_contact": "A black wheel is being mounted onto a pink connector attached to a white perforated beam.",
+        "visible_safety_concern": false,
+        "action_observed": "The assembler is pressing a black wheel onto a pink connector, which is fixed to a white perforated beam.",
+        "observed_items": [
+          {
+            "item_id": "check-005",
+            "confidence": 0.9
+          }
+        ]
+      },
+      {
+        "segment_id": "seg-011",
+        "start_time_seconds": 190.0,
+        "end_time_seconds": 215.0,
+        "description": "",
+        "ppe_status": "not-visible",
+        "tool_in_use": null,
+        "component_contact": "A black wheel is being mounted onto a pink pin, and a pink pulley is being fitted onto the pin.",
+        "visible_safety_concern": false,
+        "action_observed": "The assembler is pressing a black wheel onto a pink pin and fitting a pink pulley onto the same pin.",
+        "observed_items": [
+          {
+            "item_id": "check-006",
+            "confidence": 0.9
+          }
+        ]
+      },
+      {
+        "segment_id": "seg-012",
+        "start_time_seconds": 209.0,
+        "end_time_seconds": 234.0,
+        "description": "",
+        "ppe_status": "non-compliant",
+        "tool_in_use": null,
+        "component_contact": "A black wheel is being mounted onto a gray pin.",
+        "visible_safety_concern": false,
+        "action_observed": "A black wheel is being slid onto a gray pin, which is held by hand.",
+        "observed_items": [
+          {
+            "item_id": "check-005",
+            "confidence": 0.9
+          }
+        ]
+      },
+      {
+        "segment_id": "seg-013",
+        "start_time_seconds": 228.0,
+        "end_time_seconds": 253.0,
+        "description": "",
+        "ppe_status": "not-visible",
+        "tool_in_use": null,
+        "component_contact": "A black wheel is being mounted onto a gray pin, and the pin is being inserted into a white perforated beam.",
+        "visible_safety_concern": false,
+        "action_observed": "The user is holding a black wheel and inserting a gray pin through its center hole, then attaching the pin to a white perforated beam.",
+        "observed_items": [
+          {
+            "item_id": "check-005",
+            "confidence": 0.9
+          }
+        ]
+      },
+      {
+        "segment_id": "seg-014",
+        "start_time_seconds": 247.0,
+        "end_time_seconds": 260.2,
+        "description": "",
+        "ppe_status": "not-visible",
+        "tool_in_use": null,
+        "component_contact": "A pink connector is being pressed onto a white perforated beam near the rear axle.",
+        "visible_safety_concern": false,
+        "action_observed": "A pink connector is being manually pressed onto the white perforated beam at the rear axle area.",
+        "observed_items": [
+          {
+            "item_id": "check-003",
+            "confidence": 0.9
+          }
+        ]
+      }
+    ],
+    "total_segments": 14
+  },
+  "verdicts": [
+    {
+      "run_id": "validate-20260620-f17882",
+      "item_id": "check-001",
+      "step_id": "step-001",
+      "sequence": 1,
+      "criterion": "The short braces must be mounted onto the base frame and secured with a short push-fit pin, a tooth-lock washer, and a hex nut.",
+      "verdict": "Compliant",
+      "confidence": 1.0,
+      "evidence_segment_id": "seg-003",
+      "evidence_timestamp_start": 38.0,
+      "evidence_timestamp_end": 63.0,
+      "keyframe_blob_path": "keyframes/validate-20260620-f17882/step-001.jpg",
+      "reasoning": "A dedicated vision pass confirmed the action in segment seg-003, which shows the worker manually inserting a pink connector into a hole of a white perforated beam while aligning it with another white perforated beam.",
+      "sequence_ok": true,
+      "duration_ok": null,
+      "created_at": "2026-06-20T17:03:12.427470+00:00"
+    },
+    {
+      "run_id": "validate-20260620-f17882",
+      "item_id": "check-002",
+      "step_id": "step-002",
+      "sequence": 2,
+      "criterion": "The long brace must be attached to the assembly, aligned, and secured with a short push-fit pin, a tooth-lock washer, and a hex nut.",
+      "verdict": "Compliant",
+      "confidence": 1.0,
+      "evidence_segment_id": "seg-005",
+      "evidence_timestamp_start": 76.0,
+      "evidence_timestamp_end": 101.0,
+      "keyframe_blob_path": "keyframes/validate-20260620-f17882/step-002.jpg",
+      "reasoning": "A dedicated vision pass confirmed the observable action in segment seg-005 with high confidence.",
+      "sequence_ok": true,
+      "duration_ok": null,
+      "created_at": "2026-06-20T17:04:02.778587+00:00"
+    },
+    {
+      "run_id": "validate-20260620-f17882",
+      "item_id": "check-003",
+      "step_id": "step-003",
+      "sequence": 3,
+      "criterion": "An additional short push-fit pin must be installed at the next fastening point with a tooth-lock washer and a hex nut.",
+      "verdict": "Compliant",
+      "confidence": 1.0,
+      "evidence_segment_id": "seg-001",
+      "evidence_timestamp_start": 0.0,
+      "evidence_timestamp_end": 25.0,
+      "keyframe_blob_path": "keyframes/validate-20260620-f17882/step-003.jpg",
+      "reasoning": "The vision system flagged segment 'seg-001', which clearly shows a gray push-fit pin being inserted into a circular hole of a white perforated beam, matching the observable action.",
+      "sequence_ok": true,
+      "duration_ok": null,
+      "created_at": "2026-06-20T17:04:15.496511+00:00"
+    },
+    {
+      "run_id": "validate-20260620-f17882",
+      "item_id": "check-004",
+      "step_id": "step-004",
+      "sequence": 4,
+      "criterion": "The wing beam must be attached and secured in place with screw pins, a round washer, and an acorn nut.",
+      "verdict": "Unable to Verify",
+      "confidence": 0.7,
+      "evidence_segment_id": null,
+      "evidence_timestamp_start": null,
+      "evidence_timestamp_end": null,
+      "keyframe_blob_path": null,
+      "reasoning": "None of the video segments explicitly describe the wing beam being attached and secured in place with screw pins, a round washer, and an acorn nut, nor do they provide a clear view of the completed assembly to confirm or refute the action.",
+      "sequence_ok": true,
+      "duration_ok": null,
+      "created_at": "2026-06-20T17:05:07.233889+00:00"
+    },
+    {
+      "run_id": "validate-20260620-f17882",
+      "item_id": "check-005",
+      "step_id": "step-005",
+      "sequence": 5,
+      "criterion": "Both wings and their wheels must be mounted onto long pins and secured with round washers, tooth-lock washers, and hex nuts.",
+      "verdict": "Compliant",
+      "confidence": 1.0,
+      "evidence_segment_id": "seg-008",
+      "evidence_timestamp_start": 133.0,
+      "evidence_timestamp_end": 158.0,
+      "keyframe_blob_path": "keyframes/validate-20260620-f17882/step-005.jpg",
+      "reasoning": "A dedicated vision pass confirmed the action in segment seg-008, where a black wheel is mounted onto a long gray pin, aligning the pin through the wheel's central hole.",
+      "sequence_ok": true,
+      "duration_ok": null,
+      "created_at": "2026-06-20T17:05:19.622114+00:00"
+    },
+    {
+      "run_id": "validate-20260620-f17882",
+      "item_id": "check-006",
+      "step_id": "step-007",
+      "sequence": 6,
+      "criterion": "The middle pin must be installed, a wheel mounted, and the pulley fitted onto it, then secured with a round washer, a tooth-lock washer, and a hex nut.",
+      "verdict": "Compliant",
+      "confidence": 1.0,
+      "evidence_segment_id": "seg-011",
+      "evidence_timestamp_start": 190.0,
+      "evidence_timestamp_end": 215.0,
+      "keyframe_blob_path": "keyframes/validate-20260620-f17882/step-007.jpg",
+      "reasoning": "The vision system flagged segment 'seg-011' as confirming the observable action, where a black wheel is mounted onto a pink pin and a pink pulley is fitted onto the same pin.",
+      "sequence_ok": true,
+      "duration_ok": null,
+      "created_at": "2026-06-20T17:05:35.744748+00:00"
+    }
+  ],
+  "adherence_score": 1.0,
+  "summary": {
+    "total": 6,
+    "compliant": 5,
+    "deviation": 0,
+    "unable_to_verify": 1,
+    "requires_inspection": 0
+  },
+  "known_deviations": {}
+}

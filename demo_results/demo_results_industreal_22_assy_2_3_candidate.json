@@ -1,0 +1,1338 @@
+{
+  "run_id": "run-20260618-1e0ebcb5",
+  "sop_steps": {
+    "run_id": "run-20260612-9f9006e5",
+    "sop_document": "STEMFIE_vehicle_kit_assembly_manual.pdf",
+    "extracted_at": "2026-06-12T07:56:27.275249+00:00",
+    "total_steps": 29,
+    "steps": [
+      {
+        "step_id": "step-001",
+        "sequence": 1,
+        "description": "This manual governs two controlled procedures on the STEMFIE construction-set vehicle: Procedure A - full assembly from the base to the completed configuration (state 13), and Procedure B - replacement of the long-brace rear chassis with the short-brace rear chassis (state 13 to state 22).\nThe vehicle comprises 36 printed parts organized into 11 tracked components. All verification in this manual is performed against the 11-component state model defined in step 5.\nNotation used throughout: orange squares mark work instructions, red marks warnings and known error modes, blue marks informative notes, green marks verification criteria, and magenta circles mark required parts.",
+        "check_type": "presence",
+        "expected_duration_seconds": null,
+        "section": "STEP 1 Scope and application",
+        "visual_references": []
+      },
+      {
+        "step_id": "step-002",
+        "sequence": 2,
+        "description": "All fastening is performed by hand: push-fit pins and finger-tightened screws and acorn nuts. No tools are required or permitted.\nDo not use pliers, drivers or other tools. Printed PLA bosses can crack under tool torque. Firm finger torque is the specified tightening level for every fastener in this manual.",
+        "check_type": "presence",
+        "expected_duration_seconds": null,
+        "section": "STEP 2 Tools and fastening method",
+        "visual_references": []
+      },
+      {
+        "step_id": "step-003",
+        "sequence": 3,
+        "description": "Parts are color-coded for identification:\n\u00b7 White PLA - braces and beams (base, chassis structures, bracket)\n\u00b7 Silver metallic PLA - pins (4x)\n\u00b7 Magenta PLA - nuts, washers, wing and pulley\n. Black tough PLA - wheels\nBefore starting, sort all parts by color and verify completeness against the chapter parts lists. Reject damaged or warped parts.",
+        "check_type": "presence",
+        "expected_duration_seconds": null,
+        "section": "STEP 3 Component identification",
+        "visual_references": []
+      },
+      {
+        "step_id": "step-004",
+        "sequence": 4,
+        "description": "The workstation contains surplus washers, nuts, screws and pins, including several visually similar pin and washer variants. Not every part at the station belongs in the vehicle.\nVerify the type and length of every fastener against the instruction for that step before installation.\nRationale: the two highest-frequency documented errors on this build are installation of a wrong pin type and substitution of an acorn nut for the bracket screw. Both are visually subtle and both have escaped automated inspection.",
+        "check_type": "presence",
+        "expected_duration_seconds": null,
+        "section": "STEP 4 Foreign and surplus stock control",
+        "visual_references": []
+      },
+      {
+        "step_id": "step-005",
+        "sequence": 5,
+        "description": "Throughout this manual, checkpoints display a strip of 11 boxes. Each box represents one tracked component, always in the same fixed order: base, front chassis, front chassis pin, rear chassis, short rear chassis, front-rear pin, rear-rear pin, front bracket, bracket screw, front wheel assembly, rear wheel assembly.\nAn orange 1 indicates the component is correctly installed; a white 0 indicates it is not installed.\nAt every checkpoint, compare the build to the strip, component by component. Any mismatch is a nonconformance: stop work and proceed per chapter 8.\nExample: base, front chassis and front chassis pin installed (state 5)",
+        "check_type": "presence",
+        "expected_duration_seconds": null,
+        "section": "STEP 5 State model and verification strips",
+        "visual_references": [
+          "figure-5.1"
+        ]
+      },
+      {
+        "step_id": "step-006",
+        "sequence": 6,
+        "description": "The procedure is subgoal-oriented. Chapters 2 and 3 may be executed in either order, and where a step states that pin order is interchangeable, either sequence is acceptable. Twenty-two distinct correct execution orders are on record for this build.\nThe following are not flexible: every checkpoint must pass before work continues, and a step is complete only when the component is correctly installed and tightened. Execution of an action does not constitute completion of the step.",
+        "check_type": "presence",
+        "expected_duration_seconds": null,
+        "section": "STEP 6 Execution-order policy",
+        "visual_references": [
+          "figure-5.1"
+        ]
+      },
+      {
+        "step_id": "step-007",
+        "sequence": 7,
+        "description": "On completing each step, remove both hands from the assembly before verification. This provides an unobstructed view of the build state for the operator, the inspector, or a vision-based verification system.\nDo not build over an unverified or suspect step. A defect concealed beneath subsequent work requires that work to be undone for rectification (chapter 8).",
+        "check_type": "presence",
+        "expected_duration_seconds": null,
+        "section": "STEP 7 Verification access rule",
+        "visual_references": [
+          "figure-5.1"
+        ]
+      },
+      {
+        "step_id": "step-008",
+        "sequence": 8,
+        "description": "All 36 part geometries are open source (STEMFIE SPS-000001, scaled 200% in all axes). Fabrication parameters: 0.3 mm layer height, 15% infill, 50 mm/s, raft build-plate adhesion, 0.5 mm hole horizontal expansion.\nThe 0.5 mm hole horizontal expansion is mandatory; without it the pins will not achieve the specified push fit.",
+        "check_type": "presence",
+        "expected_duration_seconds": null,
+        "section": "STEP 8 Replacement-part fabrication",
+        "visual_references": [
+          "figure-5.1"
+        ]
+      },
+      {
+        "step_id": "step-009",
+        "sequence": 9,
+        "description": "Select the applicable procedure from the work order:\n. Procedure A - new build: proceed to chapter 2 and work through chapter 6 in chapter order (chapters 2 and 3 interchangeable).\n. Procedure B - rear-chassis upgrade: proceed to chapter 7.\nProcedure B requires an incoming unit verified at state 13 (cover strip). A unit not at state 13 must first be dispositioned per chapter 8.",
+        "check_type": "presence",
+        "expected_duration_seconds": null,
+        "section": "STEP 9 Procedure selection",
+        "visual_references": [
+          "figure-5.1"
+        ]
+      },
+      {
+        "step_id": "step-010",
+        "sequence": 10,
+        "description": "\u00b7 Base plate (1x) - white\n\u00b7 Front chassis brace set (1x) - white\n\u00b7 Front chassis pin (1x) - silver\nSurplus pins are present at the station. Verify pin type and length against the work instruction before installation (step 4).",
+        "check_type": "presence",
+        "expected_duration_seconds": null,
+        "section": "STEP 1 Parts required for this chapter",
+        "visual_references": [
+          "figure-6.1"
+        ]
+      },
+      {
+        "step_id": "step-011",
+        "sequence": 11,
+        "description": "Place the base on a flat surface in the standard orientation. All subsequent alignment references the base.\nInspect the part for damage or warping before proceeding.\nCheckpoint 2.2: state 1 - base only",
+        "check_type": "presence",
+        "expected_duration_seconds": null,
+        "section": "STEP 2 Place the base",
+        "visual_references": [
+          "figure-6.1"
+        ]
+      },
+      {
+        "step_id": "step-012",
+        "sequence": 12,
+        "description": "Align the front chassis braces to the front interface of the base.\nFit the chassis onto the base until fully seated: no gap at the joint, bores aligned.\nA misaligned front chassis is a documented high-impact error; all subsequent steps build upon it. Verify squareness at this step.",
+        "check_type": "presence",
+        "expected_duration_seconds": null,
+        "section": "STEP 3 Install the front chassis",
+        "visual_references": [
+          "figure-6.1"
+        ]
+      },
+      {
+        "step_id": "step-013",
+        "sequence": 13,
+        "description": "Verify the pin: correct type, correct length, silver.\nInsert the pin through the aligned bores and push to a full seat. Verify head orientation per the work instruction.\nWrong pin type and reversed pin orientation are the most frequently documented pin errors on this build and have escaped automated inspection. Manual verification is mandatory.",
+        "check_type": "presence",
+        "expected_duration_seconds": null,
+        "section": "STEP 4 Install the front chassis pin",
+        "visual_references": [
+          "figure-6.1"
+        ]
+      },
+      {
+        "step_id": "step-014",
+        "sequence": 14,
+        "description": "Pin flush and fully engaged; correct type; correct orientation.\nFront chassis cannot rotate or lift from the base.\nHands clear; build matches the strip below.\nCheckpoint 2.5: state 5 - front chassis subgoal complete\nOperator (name / signature / date)\nInspector (name / signature / date)\nResult: PASS [ ] FAIL [ ]\n:unselected: :unselected:",
+        "check_type": "presence",
+        "expected_duration_seconds": null,
+        "section": "STEP 5 Front chassis - verification",
+        "visual_references": [
+          "figure-7.1"
+        ]
+      },
+      {
+        "step_id": "step-015",
+        "sequence": 15,
+        "description": "\u00b7 Long braces (2x) - white\n\u00b7 Front-rear chassis pin (1x) - silver\n\u00b7 Rear-rear chassis pin (1x) - silver\nUse the LONG braces. Short braces are Procedure B stock and must not be installed in a new build. If in doubt, compare brace lengths side by side.\nThis chapter may be executed before chapter 2; both orders are correct.",
+        "check_type": "presence",
+        "expected_duration_seconds": null,
+        "section": "STEP 1 Parts required for this chapter",
+        "visual_references": [
+          "figure-8.1"
+        ]
+      },
+      {
+        "step_id": "step-016",
+        "sequence": 16,
+        "description": "Align both long braces to the rear interface of the base.\nFit until the bores align. The braces must sit parallel, bores concentric with the base bores.",
+        "check_type": "presence",
+        "expected_duration_seconds": null,
+        "section": "STEP 2 Install the rear chassis",
+        "visual_references": [
+          "figure-8.1"
+        ]
+      },
+      {
+        "step_id": "step-017",
+        "sequence": 17,
+        "description": "Verify the pin, then insert it through the forward bore position of the rear chassis.\nPush to a full seat and verify orientation.\nSteps 3 and 4 are interchangeable; the two rear pins may be installed in either order.",
+        "check_type": "presence",
+        "expected_duration_seconds": null,
+        "section": "STEP 3 Install the front-rear chassis pin",
+        "visual_references": [
+          "figure-8.1"
+        ]
+      },
+      {
+        "step_id": "step-018",
+        "sequence": 18,
+        "description": "Verify the pin, then insert it through the rearmost bore position.\nPush to a full seat and verify orientation.\nApply the same verification as in chapter 2: wrong type and reversed orientation are the characteristic pin errors. Verify each pin as it is seated.",
+        "check_type": "presence",
+        "expected_duration_seconds": null,
+        "section": "STEP 4 Install the rear-rear chassis pin",
+        "visual_references": [
+          "figure-8.1"
+        ]
+      },
+      {
+        "step_id": "step-019",
+        "sequence": 19,
+        "description": "Both pins fully seated, correct type, correct orientation.\nRear chassis secure with no play; braces parallel.\nHands clear; with chapter 2 also complete, the build matches the strip below.\nCheckpoint 3.5: state 8 - both chassis subgoals complete\nOperator (name / signature / date)\nInspector (name / signature / date)\nResult: PASS [ ] FAIL [ ]\n:unselected: :unselected:",
+        "check_type": "presence",
+        "expected_duration_seconds": null,
+        "section": "STEP 5 Rear chassis - verification",
+        "visual_references": [
+          "figure-8.1"
+        ]
+      },
+      {
+        "step_id": "step-020",
+        "sequence": 20,
+        "description": "\u00b7 Front bracket (1x) - white, with magenta wing per configuration :selected:\n. Front bracket screw (1x) - threaded shank with head :selected: :selected:\nAcorn nuts at the station are visually similar to the bracket screw and are not interchangeable with it. This substitution is a documented error that has escaped automated inspection. Positively identify the screw before installation.\nChapters 2 and 3 must both be complete before this chapter.",
+        "check_type": "presence",
+        "expected_duration_seconds": null,
+        "section": "STEP 1 Parts required for this chapter",
+        "visual_references": [
+          "figure-9.1"
+        ]
+      },
+      {
+        "step_id": "step-021",
+        "sequence": 21,
+        "description": "Align the front bracket to the front chassis interface.\nFit the bracket and hold the alignment: square to the vehicle centerline, bores aligned.",
+        "check_type": "presence",
+        "expected_duration_seconds": null,
+        "section": "STEP 2 Mount the front bracket",
+        "visual_references": [
+          "figure-9.1"
+        ]
+      },
+      {
+        "step_id": "step-022",
+        "sequence": 22,
+        "description": "Install the verified screw by hand.\nTighten to firm finger torque: thread fully engaged, head seated flush.\nHOLD POINT - before proceeding, re-confirm by head shape that the installed fastener is the screw, not an acorn nut.\nCheckpoint 4.3 (hold point): state 9 - bracket and screw installed\nCheckpoint 4.3 (hold point)\nOperator (name / signature / date)\nInspector (name / signature / date)\nResult: PASS [ ] FAIL [ ]\n:unselected: :unselected:",
+        "check_type": "presence",
+        "expected_duration_seconds": null,
+        "section": "STEP 3 Install the front bracket screw",
+        "visual_references": [
+          "figure-9.1"
+        ]
+      },
+      {
+        "step_id": "step-023",
+        "sequence": 23,
+        "description": "\u00b7 Wheels (4x) - black :selected:\n\u00b7 Washers (4x) - magenta :selected:\n\u00b7 Acorn nuts (4x) - magenta :selected:\n\u00b7 Rear pulley (1x) - magenta :selected:\nCount the washers before starting. Omission of wheel washers is the documented low-detectability error on this build; the assembly appears acceptable without them.\nSteps 2 and 3 are interchangeable; front and rear wheel assemblies may be installed in either order.",
+        "check_type": "presence",
+        "expected_duration_seconds": null,
+        "section": "STEP 1 Parts required for this chapter",
+        "visual_references": [
+          "figure-10.1"
+        ]
+      },
+      {
+        "step_id": "step-024",
+        "sequence": 24,
+        "description": "On each side of the front axle, assemble the stack in order: wheel, washer, acorn nut.\nInstall each acorn nut by hand and tighten to firm finger torque.\nRotation check: both wheels rotate freely with no axial play.",
+        "check_type": "presence",
+        "expected_duration_seconds": null,
+        "section": "STEP 2 Install the front wheel assembly",
+        "visual_references": [
+          "figure-10.1"
+        ]
+      },
+      {
+        "step_id": "step-025",
+        "sequence": 25,
+        "description": "Install the pulley on the rear axle first.\nA missing rear pulley is a documented error state with low detectability once the wheels are installed. The pulley is always installed before the wheels.\nOn each side, assemble wheel, washer, acorn nut, and tighten to firm finger torque.\nRotation check: both wheels rotate freely; pulley present and seated.",
+        "check_type": "presence",
+        "expected_duration_seconds": null,
+        "section": "STEP 3 Install the rear wheel assembly",
+        "visual_references": [
+          "figure-10.1"
+        ]
+      },
+      {
+        "step_id": "step-026",
+        "sequence": 26,
+        "description": "A washer is present behind every wheel (4x).\nAll four acorn nuts tightened to firm finger torque.\nRear pulley present and seated.\nHands clear; build matches the strip below if chapter 4 is complete.\nCheckpoint 5.4: state 13 - all components installed\nOperator (name / signature / date)\nInspector (name / signature / date)\nResult: PASS [ ] FAIL [ ]\n:unselected: :unselected:",
+        "check_type": "presence",
+        "expected_duration_seconds": null,
+        "section": "STEP 4 Wheel assemblies - verification",
+        "visual_references": [
+          "figure-10.1"
+        ]
+      },
+      {
+        "step_id": "step-027",
+        "sequence": 27,
+        "description": "Hands clear. Verify the complete vehicle, component by component, against the strip below.\nEvery component at 1 except the short rear chassis, which remains at 0 in the new-build configuration.\nAcceptance criterion: state 13 - complete assembly",
+        "check_type": "presence",
+        "expected_duration_seconds": null,
+        "section": "STEP 1 State verification",
+        "visual_references": [
+          "figure-11.1"
+        ]
+      },
+      {
+        "step_id": "step-028",
+        "sequence": 28,
+        "description": "Front bracket secured by the screw (not a nut), fully tightened.\nAll four pins: correct type, correct orientation, fully seated.\nAll four acorn nuts tight; washer behind every wheel; rear pulley present; wing present per configuration.\nAll four wheels rotate freely; no component exhibits play.",
+        "check_type": "presence",
+        "expected_duration_seconds": null,
+        "section": "STEP 2 Fastener and hardware audit",
+        "visual_references": [
+          "figure-11.1"
+        ]
+      },
+      {
+        "step_id": "step-029",
+        "sequence": 29,
+        "description": "Record the build: executed step order, checkpoint results, and the final state vector. On PASS, release the vehicle.\nOn any FAIL, do not release. Quarantine the unit and proceed per chapter 8; every component has a sanctioned removal and rework path.\nFinal inspection - Procedure A\nOperator (name / signature / date)\nInspector (name / signature / date)\nResult: PASS [ ] FAIL [ ]\n:unselected: :unselected:",
+        "check_type": "presence",
+        "expected_duration_seconds": null,
+        "section": "STEP 3 Disposition and records",
+        "visual_references": [
+          "figure-11.1"
+        ]
+      }
+    ]
+  },
+  "checklist": {
+    "run_id": "run-20260612-9f9006e5",
+    "sop_document": "STEMFIE_vehicle_kit_assembly_manual.pdf",
+    "created_at": "2026-06-16T00:54:54.771072+00:00",
+    "total_items": 29,
+    "items": [
+      {
+        "item_id": "check-001",
+        "step_id": "step-001",
+        "sequence": 1,
+        "criterion": "Ensure the manual governs the procedures and verification against the 11-component state model defined in step 5.",
+        "observable_action": null,
+        "verifiability": "fine_detail",
+        "check_type": "presence",
+        "expected_duration_seconds": null,
+        "sop_section": "STEP 1 Scope and application"
+      },
+      {
+        "item_id": "check-002",
+        "step_id": "step-002",
+        "sequence": 2,
+        "criterion": "Ensure all fastening is performed by hand without tools.",
+        "observable_action": null,
+        "verifiability": "fine_detail",
+        "check_type": "presence",
+        "expected_duration_seconds": null,
+        "sop_section": "STEP 2 Tools and fastening method"
+      },
+      {
+        "item_id": "check-003",
+        "step_id": "step-003",
+        "sequence": 3,
+        "criterion": "Sort all parts by color and verify completeness against the parts list.",
+        "observable_action": null,
+        "verifiability": "fine_detail",
+        "check_type": "presence",
+        "expected_duration_seconds": null,
+        "sop_section": "STEP 3 Component identification"
+      },
+      {
+        "item_id": "check-004",
+        "step_id": "step-004",
+        "sequence": 4,
+        "criterion": "Verify the type and length of every fastener against the instruction before installation.",
+        "observable_action": null,
+        "verifiability": "fine_detail",
+        "check_type": "presence",
+        "expected_duration_seconds": null,
+        "sop_section": "STEP 4 Foreign and surplus stock control"
+      },
+      {
+        "item_id": "check-005",
+        "step_id": "step-005",
+        "sequence": 5,
+        "criterion": "Compare the build to the verification strip, component by component, at every checkpoint.",
+        "observable_action": null,
+        "verifiability": "fine_detail",
+        "check_type": "presence",
+        "expected_duration_seconds": null,
+        "sop_section": "STEP 5 State model and verification strips"
+      },
+      {
+        "item_id": "check-006",
+        "step_id": "step-006",
+        "sequence": 6,
+        "criterion": "Ensure checkpoints pass before work continues and components are correctly installed and tightened.",
+        "observable_action": null,
+        "verifiability": "fine_detail",
+        "check_type": "presence",
+        "expected_duration_seconds": null,
+        "sop_section": "STEP 6 Execution-order policy"
+      },
+      {
+        "item_id": "check-007",
+        "step_id": "step-007",
+        "sequence": 7,
+        "criterion": "Remove both hands from the assembly after completing each step to provide an unobstructed view.",
+        "observable_action": "Hands are removed from the assembly after completing the step.",
+        "verifiability": "presence",
+        "check_type": "presence",
+        "expected_duration_seconds": null,
+        "sop_section": "STEP 7 Verification access rule"
+      },
+      {
+        "item_id": "check-008",
+        "step_id": "step-008",
+        "sequence": 8,
+        "criterion": "Ensure replacement parts are fabricated with the specified parameters, including mandatory hole horizontal expansion.",
+        "observable_action": null,
+        "verifiability": "fine_detail",
+        "check_type": "presence",
+        "expected_duration_seconds": null,
+        "sop_section": "STEP 8 Replacement-part fabrication"
+      },
+      {
+        "item_id": "check-009",
+        "step_id": "step-009",
+        "sequence": 9,
+        "criterion": "Select the applicable procedure from the work order and verify incoming unit state for Procedure B.",
+        "observable_action": null,
+        "verifiability": "fine_detail",
+        "check_type": "presence",
+        "expected_duration_seconds": null,
+        "sop_section": "STEP 9 Procedure selection"
+      },
+      {
+        "item_id": "check-010",
+        "step_id": "step-010",
+        "sequence": 10,
+        "criterion": "Verify the parts required for this chapter, including pin type and length.",
+        "observable_action": null,
+        "verifiability": "fine_detail",
+        "check_type": "presence",
+        "expected_duration_seconds": null,
+        "sop_section": "STEP 1 Parts required for this chapter"
+      },
+      {
+        "item_id": "check-011",
+        "step_id": "step-011",
+        "sequence": 11,
+        "criterion": "Place the base on a flat surface in the standard orientation.",
+        "observable_action": "The base is placed on a flat surface in the standard orientation.",
+        "verifiability": "fine_detail",
+        "check_type": "presence",
+        "expected_duration_seconds": null,
+        "sop_section": "STEP 2 Place the base"
+      },
+      {
+        "item_id": "check-012",
+        "step_id": "step-012",
+        "sequence": 12,
+        "criterion": "Align the front chassis braces to the front interface of the base and fit the chassis onto the base.",
+        "observable_action": "The front chassis is mounted onto the base.",
+        "verifiability": "presence",
+        "check_type": "presence",
+        "expected_duration_seconds": null,
+        "sop_section": "STEP 3 Install the front chassis"
+      },
+      {
+        "item_id": "check-013",
+        "step_id": "step-013",
+        "sequence": 13,
+        "criterion": "Insert the pin through the aligned bores of the front chassis and push to a full seat.",
+        "observable_action": "The pin is inserted through the aligned bores of the front chassis.",
+        "verifiability": "presence",
+        "check_type": "presence",
+        "expected_duration_seconds": null,
+        "sop_section": "STEP 4 Install the front chassis pin"
+      },
+      {
+        "item_id": "check-014",
+        "step_id": "step-014",
+        "sequence": 14,
+        "criterion": "Verify the front chassis subgoal is complete, including pin flushness, orientation, and seating.",
+        "observable_action": null,
+        "verifiability": "fine_detail",
+        "check_type": "presence",
+        "expected_duration_seconds": null,
+        "sop_section": "STEP 5 Front chassis - verification"
+      },
+      {
+        "item_id": "check-015",
+        "step_id": "step-015",
+        "sequence": 15,
+        "criterion": "Verify the parts required for this chapter, including brace type and pin type.",
+        "observable_action": null,
+        "verifiability": "fine_detail",
+        "check_type": "presence",
+        "expected_duration_seconds": null,
+        "sop_section": "STEP 1 Parts required for this chapter"
+      },
+      {
+        "item_id": "check-016",
+        "step_id": "step-016",
+        "sequence": 16,
+        "criterion": "Align both long braces to the rear interface of the base and fit until the bores align.",
+        "observable_action": "The long braces are mounted onto the rear interface of the base.",
+        "verifiability": "presence",
+        "check_type": "presence",
+        "expected_duration_seconds": null,
+        "sop_section": "STEP 2 Install the rear chassis"
+      },
+      {
+        "item_id": "check-017",
+        "step_id": "step-017",
+        "sequence": 17,
+        "criterion": "Insert the pin through the forward bore position of the rear chassis and push to a full seat.",
+        "observable_action": "The pin is inserted through the forward bore position of the rear chassis.",
+        "verifiability": "presence",
+        "check_type": "presence",
+        "expected_duration_seconds": null,
+        "sop_section": "STEP 3 Install the front-rear chassis pin"
+      },
+      {
+        "item_id": "check-018",
+        "step_id": "step-018",
+        "sequence": 18,
+        "criterion": "Insert the pin through the rearmost bore position of the rear chassis and push to a full seat.",
+        "observable_action": "The pin is inserted through the rearmost bore position of the rear chassis.",
+        "verifiability": "presence",
+        "check_type": "presence",
+        "expected_duration_seconds": null,
+        "sop_section": "STEP 4 Install the rear-rear chassis pin"
+      },
+      {
+        "item_id": "check-019",
+        "step_id": "step-019",
+        "sequence": 19,
+        "criterion": "Verify the rear chassis subgoal is complete, including pin seating, brace alignment, and absence of play.",
+        "observable_action": null,
+        "verifiability": "fine_detail",
+        "check_type": "presence",
+        "expected_duration_seconds": null,
+        "sop_section": "STEP 5 Rear chassis - verification"
+      },
+      {
+        "item_id": "check-020",
+        "step_id": "step-020",
+        "sequence": 20,
+        "criterion": "Verify the parts required for this chapter, including screw identification.",
+        "observable_action": null,
+        "verifiability": "fine_detail",
+        "check_type": "presence",
+        "expected_duration_seconds": null,
+        "sop_section": "STEP 1 Parts required for this chapter"
+      },
+      {
+        "item_id": "check-021",
+        "step_id": "step-021",
+        "sequence": 21,
+        "criterion": "Align the front bracket to the front chassis interface and hold the alignment.",
+        "observable_action": "The front bracket is mounted onto the front chassis interface.",
+        "verifiability": "presence",
+        "check_type": "presence",
+        "expected_duration_seconds": null,
+        "sop_section": "STEP 2 Mount the front bracket"
+      },
+      {
+        "item_id": "check-022",
+        "step_id": "step-022",
+        "sequence": 22,
+        "criterion": "Install the verified screw by hand and tighten to firm finger torque.",
+        "observable_action": "The screw is installed onto the front bracket.",
+        "verifiability": "presence",
+        "check_type": "presence",
+        "expected_duration_seconds": null,
+        "sop_section": "STEP 3 Install the front bracket screw"
+      },
+      {
+        "item_id": "check-023",
+        "step_id": "step-023",
+        "sequence": 23,
+        "criterion": "Verify the parts required for this chapter, including washer count.",
+        "observable_action": null,
+        "verifiability": "fine_detail",
+        "check_type": "presence",
+        "expected_duration_seconds": null,
+        "sop_section": "STEP 1 Parts required for this chapter"
+      },
+      {
+        "item_id": "check-024",
+        "step_id": "step-024",
+        "sequence": 24,
+        "criterion": "Assemble the stack in order: wheel, washer, acorn nut, and install each acorn nut by hand.",
+        "observable_action": "The front wheel assembly is mounted onto the axle.",
+        "verifiability": "presence",
+        "check_type": "presence",
+        "expected_duration_seconds": null,
+        "sop_section": "STEP 2 Install the front wheel assembly"
+      },
+      {
+        "item_id": "check-025",
+        "step_id": "step-025",
+        "sequence": 25,
+        "criterion": "Install the pulley on the rear axle first, then assemble the stack in order: wheel, washer, acorn nut.",
+        "observable_action": "The pulley is installed on the rear axle before the rear wheel stack.",
+        "verifiability": "presence",
+        "check_type": "presence",
+        "expected_duration_seconds": null,
+        "sop_section": "STEP 3 Install the rear wheel assembly",
+        "key_objects": []
+      },
+      {
+        "item_id": "check-026",
+        "step_id": "step-026",
+        "sequence": 26,
+        "criterion": "Verify washer presence behind every wheel, acorn nut tightness, and rear pulley presence.",
+        "observable_action": null,
+        "verifiability": "fine_detail",
+        "check_type": "presence",
+        "expected_duration_seconds": null,
+        "sop_section": "STEP 4 Wheel assemblies - verification"
+      },
+      {
+        "item_id": "check-027",
+        "step_id": "step-027",
+        "sequence": 27,
+        "criterion": "Verify the complete vehicle against the state strip, ensuring state 13 - complete assembly.",
+        "observable_action": null,
+        "verifiability": "fine_detail",
+        "check_type": "presence",
+        "expected_duration_seconds": null,
+        "sop_section": "STEP 1 State verification"
+      },
+      {
+        "item_id": "check-028",
+        "step_id": "step-028",
+        "sequence": 28,
+        "criterion": "Audit fasteners and hardware, including pin type, orientation, acorn nut tightness, washer presence, and rear pulley presence.",
+        "observable_action": null,
+        "verifiability": "fine_detail",
+        "check_type": "presence",
+        "expected_duration_seconds": null,
+        "sop_section": "STEP 2 Fastener and hardware audit"
+      },
+      {
+        "item_id": "check-029",
+        "step_id": "step-029",
+        "sequence": 29,
+        "criterion": "Record the build and release the vehicle on PASS or quarantine on FAIL.",
+        "observable_action": null,
+        "verifiability": "fine_detail",
+        "check_type": "presence",
+        "expected_duration_seconds": null,
+        "sop_section": "STEP 3 Disposition and records"
+      }
+    ]
+  },
+  "observations": {
+    "run_id": "run-20260618-1e0ebcb5",
+    "video_url": "https://pgstorepriya2026.blob.core.windows.net/manufacturing-videos/industreal_22_assy_2_3_candidate.mp4?se=2026-06-24T12%3A22%3A06Z&sp=r&sv=2026-04-06&sr=b&skoid=e81b6a39-84e8-4983-b7fc-d95b7107f5ff&sktid=08105963-07b7-4177-b8dd-2dfbf96d457b&skt=2026-06-18T12%3A22%3A07Z&ske=2026-06-24T12%3A22%3A06Z&sks=b&skv=2026-04-06&sig=cYy77bPItNG0XsYlMns5kjUB%2FanB9i3S24P3nmxJomA%3D",
+    "video_duration_seconds": 306.5,
+    "segments": [
+      {
+        "segment_id": "seg-001",
+        "start_time_seconds": 0.0,
+        "end_time_seconds": 25.0,
+        "description": "",
+        "ppe_status": "not-visible",
+        "tool_in_use": null,
+        "component_contact": "a white perforated beam and a gray cylindrical pin",
+        "visible_safety_concern": false,
+        "action_observed": "Inserting a gray cylindrical pin into the leftmost hole of a white perforated beam."
+      },
+      {
+        "segment_id": "seg-002",
+        "start_time_seconds": 19.0,
+        "end_time_seconds": 44.0,
+        "description": "",
+        "ppe_status": "not-visible",
+        "tool_in_use": null,
+        "component_contact": "a white perforated beam and a gray cylindrical pin",
+        "visible_safety_concern": false,
+        "action_observed": "Inserting a gray cylindrical pin into the middle hole of a white perforated beam."
+      },
+      {
+        "segment_id": "seg-003",
+        "start_time_seconds": 38.0,
+        "end_time_seconds": 63.0,
+        "description": "",
+        "ppe_status": "not-visible",
+        "tool_in_use": null,
+        "component_contact": "a white perforated beam and a gray cylindrical pin",
+        "visible_safety_concern": false,
+        "action_observed": "A gray cylindrical pin is being inserted into a hole on a white perforated beam, aligning the pin with the beam's holes."
+      },
+      {
+        "segment_id": "seg-004",
+        "start_time_seconds": 57.0,
+        "end_time_seconds": 82.0,
+        "description": "",
+        "ppe_status": "not-visible",
+        "tool_in_use": null,
+        "component_contact": "a white perforated beam and a pink connector",
+        "visible_safety_concern": false,
+        "action_observed": "Aligning a pink connector with a hole in a white perforated beam and pressing them together."
+      },
+      {
+        "segment_id": "seg-005",
+        "start_time_seconds": 76.0,
+        "end_time_seconds": 101.0,
+        "description": "",
+        "ppe_status": "not-visible",
+        "tool_in_use": null,
+        "component_contact": "a white perforated beam and pink connectors",
+        "visible_safety_concern": false,
+        "action_observed": "A pink connector is being aligned with a hole in a white perforated beam, and gray pins are being prepared for insertion."
+      },
+      {
+        "segment_id": "seg-006",
+        "start_time_seconds": 95.0,
+        "end_time_seconds": 120.0,
+        "description": "",
+        "ppe_status": "not-visible",
+        "tool_in_use": null,
+        "component_contact": "a white perforated beam and a pink hexagonal connector",
+        "visible_safety_concern": false,
+        "action_observed": "Inserting a pink hexagonal connector into a hole on a white perforated beam."
+      },
+      {
+        "segment_id": "seg-007",
+        "start_time_seconds": 114.0,
+        "end_time_seconds": 139.0,
+        "description": "",
+        "ppe_status": "not-visible",
+        "tool_in_use": null,
+        "component_contact": "a white perforated beam and pink hexagonal connectors",
+        "visible_safety_concern": false,
+        "action_observed": "Aligning a pink hexagonal connector with a hole in the white perforated beam and pressing it into place."
+      },
+      {
+        "segment_id": "seg-008",
+        "start_time_seconds": 133.0,
+        "end_time_seconds": 158.0,
+        "description": "",
+        "ppe_status": "not-visible",
+        "tool_in_use": null,
+        "component_contact": "a white perforated beam and a pink connector with a threaded hole",
+        "visible_safety_concern": false,
+        "action_observed": "A pink connector is being threaded onto a white perforated beam through one of its holes."
+      },
+      {
+        "segment_id": "seg-009",
+        "start_time_seconds": 152.0,
+        "end_time_seconds": 177.0,
+        "description": "",
+        "ppe_status": "not-visible",
+        "tool_in_use": null,
+        "component_contact": "a black wheel and a gray axle",
+        "visible_safety_concern": false,
+        "action_observed": "A gray axle is being inserted into the center hole of a black wheel."
+      },
+      {
+        "segment_id": "seg-010",
+        "start_time_seconds": 171.0,
+        "end_time_seconds": 196.0,
+        "description": "",
+        "ppe_status": "not-visible",
+        "tool_in_use": null,
+        "component_contact": "A black wheel is being mounted onto a gray axle, which is inserted through a white perforated beam and a pink connector.",
+        "visible_safety_concern": false,
+        "action_observed": "The assembler is inserting a gray axle through a white perforated beam and a pink connector, then attaching a black wheel onto the axle."
+      },
+      {
+        "segment_id": "seg-011",
+        "start_time_seconds": 190.0,
+        "end_time_seconds": 215.0,
+        "description": "",
+        "ppe_status": "not-visible",
+        "tool_in_use": null,
+        "component_contact": "A black wheel is being mounted onto a pink connector attached to a white perforated beam.",
+        "visible_safety_concern": false,
+        "action_observed": "The assembler is pressing a black wheel onto a pink connector that is fixed to a white perforated beam."
+      },
+      {
+        "segment_id": "seg-012",
+        "start_time_seconds": 209.0,
+        "end_time_seconds": 234.0,
+        "description": "",
+        "ppe_status": "not-visible",
+        "tool_in_use": null,
+        "component_contact": "a black wheel with a pink hub and a white perforated beam",
+        "visible_safety_concern": false,
+        "action_observed": "The user is attaching a black wheel with a pink hub to a white perforated beam using a pink connector."
+      },
+      {
+        "segment_id": "seg-013",
+        "start_time_seconds": 228.0,
+        "end_time_seconds": 253.0,
+        "description": "",
+        "ppe_status": "not-visible",
+        "tool_in_use": null,
+        "component_contact": "A black wheel with a pink center is being attached to a white perforated beam.",
+        "visible_safety_concern": false,
+        "action_observed": "The assembler is pressing a black wheel with a pink center onto a white perforated beam, aligning the wheel's center with the beam's peg."
+      },
+      {
+        "segment_id": "seg-014",
+        "start_time_seconds": 247.0,
+        "end_time_seconds": 272.0,
+        "description": "",
+        "ppe_status": "not-visible",
+        "tool_in_use": "screwdriver",
+        "component_contact": "a white perforated beam and a gray screw",
+        "visible_safety_concern": false,
+        "action_observed": "A screwdriver is being used to tighten a gray screw into a hole on a white perforated beam."
+      },
+      {
+        "segment_id": "seg-015",
+        "start_time_seconds": 266.0,
+        "end_time_seconds": 291.0,
+        "description": "",
+        "ppe_status": "not-visible",
+        "tool_in_use": "screwdriver",
+        "component_contact": "a white perforated beam and pink connectors",
+        "visible_safety_concern": false,
+        "action_observed": "Using a screwdriver to tighten a screw through a white perforated beam into a pink connector."
+      },
+      {
+        "segment_id": "seg-016",
+        "start_time_seconds": 285.0,
+        "end_time_seconds": 306.5,
+        "description": "",
+        "ppe_status": "not-visible",
+        "tool_in_use": null,
+        "component_contact": "a pink connector being pressed onto a black wheel axle",
+        "visible_safety_concern": false,
+        "action_observed": "The assembler is pressing a pink connector onto the axle of a black wheel attached to a white perforated beam structure."
+      }
+    ],
+    "total_segments": 16
+  },
+  "verdicts": [
+    {
+      "run_id": "run-20260618-1e0ebcb5",
+      "item_id": "check-001",
+      "step_id": "step-001",
+      "sequence": 1,
+      "criterion": "Ensure the manual governs the procedures and verification against the 11-component state model defined in step 5.",
+      "verdict": "Requires Inspection",
+      "confidence": 1.0,
+      "evidence_segment_id": null,
+      "evidence_timestamp_start": null,
+      "evidence_timestamp_end": null,
+      "keyframe_blob_path": null,
+      "reasoning": "Fine-detail QC criterion (torque, seating, orientation, rotation, small-part count, or an inspection-only act) \u2014 not assessable from overhead 1 fps / 512 px video. Routed to manual inspection.",
+      "sequence_ok": true,
+      "duration_ok": null,
+      "created_at": "2026-06-18T13:06:48.757719+00:00"
+    },
+    {
+      "run_id": "run-20260618-1e0ebcb5",
+      "item_id": "check-002",
+      "step_id": "step-002",
+      "sequence": 2,
+      "criterion": "Ensure all fastening is performed by hand without tools.",
+      "verdict": "Requires Inspection",
+      "confidence": 1.0,
+      "evidence_segment_id": null,
+      "evidence_timestamp_start": null,
+      "evidence_timestamp_end": null,
+      "keyframe_blob_path": null,
+      "reasoning": "Fine-detail QC criterion (torque, seating, orientation, rotation, small-part count, or an inspection-only act) \u2014 not assessable from overhead 1 fps / 512 px video. Routed to manual inspection.",
+      "sequence_ok": false,
+      "duration_ok": null,
+      "created_at": "2026-06-18T13:06:48.757778+00:00"
+    },
+    {
+      "run_id": "run-20260618-1e0ebcb5",
+      "item_id": "check-003",
+      "step_id": "step-003",
+      "sequence": 3,
+      "criterion": "Sort all parts by color and verify completeness against the parts list.",
+      "verdict": "Requires Inspection",
+      "confidence": 1.0,
+      "evidence_segment_id": null,
+      "evidence_timestamp_start": null,
+      "evidence_timestamp_end": null,
+      "keyframe_blob_path": null,
+      "reasoning": "Fine-detail QC criterion (torque, seating, orientation, rotation, small-part count, or an inspection-only act) \u2014 not assessable from overhead 1 fps / 512 px video. Routed to manual inspection.",
+      "sequence_ok": true,
+      "duration_ok": null,
+      "created_at": "2026-06-18T13:06:48.757800+00:00"
+    },
+    {
+      "run_id": "run-20260618-1e0ebcb5",
+      "item_id": "check-004",
+      "step_id": "step-004",
+      "sequence": 4,
+      "criterion": "Verify the type and length of every fastener against the instruction before installation.",
+      "verdict": "Requires Inspection",
+      "confidence": 1.0,
+      "evidence_segment_id": null,
+      "evidence_timestamp_start": null,
+      "evidence_timestamp_end": null,
+      "keyframe_blob_path": null,
+      "reasoning": "Fine-detail QC criterion (torque, seating, orientation, rotation, small-part count, or an inspection-only act) \u2014 not assessable from overhead 1 fps / 512 px video. Routed to manual inspection.",
+      "sequence_ok": true,
+      "duration_ok": null,
+      "created_at": "2026-06-18T13:06:48.757816+00:00"
+    },
+    {
+      "run_id": "run-20260618-1e0ebcb5",
+      "item_id": "check-005",
+      "step_id": "step-005",
+      "sequence": 5,
+      "criterion": "Compare the build to the verification strip, component by component, at every checkpoint.",
+      "verdict": "Requires Inspection",
+      "confidence": 1.0,
+      "evidence_segment_id": null,
+      "evidence_timestamp_start": null,
+      "evidence_timestamp_end": null,
+      "keyframe_blob_path": null,
+      "reasoning": "Fine-detail QC criterion (torque, seating, orientation, rotation, small-part count, or an inspection-only act) \u2014 not assessable from overhead 1 fps / 512 px video. Routed to manual inspection.",
+      "sequence_ok": false,
+      "duration_ok": null,
+      "created_at": "2026-06-18T13:06:48.757830+00:00"
+    },
+    {
+      "run_id": "run-20260618-1e0ebcb5",
+      "item_id": "check-006",
+      "step_id": "step-006",
+      "sequence": 6,
+      "criterion": "Ensure checkpoints pass before work continues and components are correctly installed and tightened.",
+      "verdict": "Requires Inspection",
+      "confidence": 1.0,
+      "evidence_segment_id": null,
+      "evidence_timestamp_start": null,
+      "evidence_timestamp_end": null,
+      "keyframe_blob_path": null,
+      "reasoning": "Fine-detail QC criterion (torque, seating, orientation, rotation, small-part count, or an inspection-only act) \u2014 not assessable from overhead 1 fps / 512 px video. Routed to manual inspection.",
+      "sequence_ok": true,
+      "duration_ok": null,
+      "created_at": "2026-06-18T13:06:48.757847+00:00"
+    },
+    {
+      "run_id": "run-20260618-1e0ebcb5",
+      "item_id": "check-007",
+      "step_id": "step-007",
+      "sequence": 7,
+      "criterion": "Remove both hands from the assembly after completing each step to provide an unobstructed view.",
+      "verdict": "Unable to Verify",
+      "confidence": 0.65,
+      "evidence_segment_id": null,
+      "evidence_timestamp_start": null,
+      "evidence_timestamp_end": null,
+      "keyframe_blob_path": null,
+      "reasoning": "None of the video segments clearly show the worker removing both hands from the assembly after completing a step; the overhead view does not provide sufficient evidence to confirm or refute hand clearance.",
+      "sequence_ok": false,
+      "duration_ok": null,
+      "created_at": "2026-06-18T13:07:09.443426+00:00"
+    },
+    {
+      "run_id": "run-20260618-1e0ebcb5",
+      "item_id": "check-008",
+      "step_id": "step-008",
+      "sequence": 8,
+      "criterion": "Ensure replacement parts are fabricated with the specified parameters, including mandatory hole horizontal expansion.",
+      "verdict": "Requires Inspection",
+      "confidence": 1.0,
+      "evidence_segment_id": null,
+      "evidence_timestamp_start": null,
+      "evidence_timestamp_end": null,
+      "keyframe_blob_path": null,
+      "reasoning": "Fine-detail QC criterion (torque, seating, orientation, rotation, small-part count, or an inspection-only act) \u2014 not assessable from overhead 1 fps / 512 px video. Routed to manual inspection.",
+      "sequence_ok": true,
+      "duration_ok": null,
+      "created_at": "2026-06-18T13:07:09.443522+00:00"
+    },
+    {
+      "run_id": "run-20260618-1e0ebcb5",
+      "item_id": "check-009",
+      "step_id": "step-009",
+      "sequence": 9,
+      "criterion": "Select the applicable procedure from the work order and verify incoming unit state for Procedure B.",
+      "verdict": "Requires Inspection",
+      "confidence": 1.0,
+      "evidence_segment_id": null,
+      "evidence_timestamp_start": null,
+      "evidence_timestamp_end": null,
+      "keyframe_blob_path": null,
+      "reasoning": "Fine-detail QC criterion (torque, seating, orientation, rotation, small-part count, or an inspection-only act) \u2014 not assessable from overhead 1 fps / 512 px video. Routed to manual inspection.",
+      "sequence_ok": true,
+      "duration_ok": null,
+      "created_at": "2026-06-18T13:07:09.443549+00:00"
+    },
+    {
+      "run_id": "run-20260618-1e0ebcb5",
+      "item_id": "check-010",
+      "step_id": "step-010",
+      "sequence": 10,
+      "criterion": "Verify the parts required for this chapter, including pin type and length.",
+      "verdict": "Requires Inspection",
+      "confidence": 1.0,
+      "evidence_segment_id": null,
+      "evidence_timestamp_start": null,
+      "evidence_timestamp_end": null,
+      "keyframe_blob_path": null,
+      "reasoning": "Fine-detail QC criterion (torque, seating, orientation, rotation, small-part count, or an inspection-only act) \u2014 not assessable from overhead 1 fps / 512 px video. Routed to manual inspection.",
+      "sequence_ok": false,
+      "duration_ok": null,
+      "created_at": "2026-06-18T13:07:09.443569+00:00"
+    },
+    {
+      "run_id": "run-20260618-1e0ebcb5",
+      "item_id": "check-011",
+      "step_id": "step-011",
+      "sequence": 11,
+      "criterion": "Place the base on a flat surface in the standard orientation.",
+      "verdict": "Requires Inspection",
+      "confidence": 1.0,
+      "evidence_segment_id": null,
+      "evidence_timestamp_start": null,
+      "evidence_timestamp_end": null,
+      "keyframe_blob_path": null,
+      "reasoning": "Fine-detail QC criterion (torque, seating, orientation, rotation, small-part count, or an inspection-only act) \u2014 not assessable from overhead 1 fps / 512 px video. Routed to manual inspection.",
+      "sequence_ok": true,
+      "duration_ok": null,
+      "created_at": "2026-06-18T13:07:09.443588+00:00"
+    },
+    {
+      "run_id": "run-20260618-1e0ebcb5",
+      "item_id": "check-012",
+      "step_id": "step-012",
+      "sequence": 12,
+      "criterion": "Align the front chassis braces to the front interface of the base and fit the chassis onto the base.",
+      "verdict": "Unable to Verify",
+      "confidence": 0.7,
+      "evidence_segment_id": null,
+      "evidence_timestamp_start": null,
+      "evidence_timestamp_end": null,
+      "keyframe_blob_path": null,
+      "reasoning": "None of the video segments clearly show the front chassis being mounted onto the base or any action involving aligning chassis braces to the base interface. The provided segments focus on pin and connector insertion, which do not match the observable action described.",
+      "sequence_ok": true,
+      "duration_ok": null,
+      "created_at": "2026-06-18T13:07:26.515474+00:00"
+    },
+    {
+      "run_id": "run-20260618-1e0ebcb5",
+      "item_id": "check-013",
+      "step_id": "step-013",
+      "sequence": 13,
+      "criterion": "Insert the pin through the aligned bores of the front chassis and push to a full seat.",
+      "verdict": "Unable to Verify",
+      "confidence": 0.7,
+      "evidence_segment_id": null,
+      "evidence_timestamp_start": null,
+      "evidence_timestamp_end": null,
+      "keyframe_blob_path": null,
+      "reasoning": "None of the video segments clearly show the pin being inserted through the aligned bores of the front chassis; while several segments involve pins and beams, the specific alignment and insertion into the front chassis bores cannot be confirmed.",
+      "sequence_ok": true,
+      "duration_ok": null,
+      "created_at": "2026-06-18T13:07:36.798343+00:00"
+    },
+    {
+      "run_id": "run-20260618-1e0ebcb5",
+      "item_id": "check-014",
+      "step_id": "step-014",
+      "sequence": 14,
+      "criterion": "Verify the front chassis subgoal is complete, including pin flushness, orientation, and seating.",
+      "verdict": "Requires Inspection",
+      "confidence": 1.0,
+      "evidence_segment_id": null,
+      "evidence_timestamp_start": null,
+      "evidence_timestamp_end": null,
+      "keyframe_blob_path": null,
+      "reasoning": "Fine-detail QC criterion (torque, seating, orientation, rotation, small-part count, or an inspection-only act) \u2014 not assessable from overhead 1 fps / 512 px video. Routed to manual inspection.",
+      "sequence_ok": false,
+      "duration_ok": null,
+      "created_at": "2026-06-18T13:07:36.798514+00:00"
+    },
+    {
+      "run_id": "run-20260618-1e0ebcb5",
+      "item_id": "check-015",
+      "step_id": "step-015",
+      "sequence": 15,
+      "criterion": "Verify the parts required for this chapter, including brace type and pin type.",
+      "verdict": "Requires Inspection",
+      "confidence": 1.0,
+      "evidence_segment_id": null,
+      "evidence_timestamp_start": null,
+      "evidence_timestamp_end": null,
+      "keyframe_blob_path": null,
+      "reasoning": "Fine-detail QC criterion (torque, seating, orientation, rotation, small-part count, or an inspection-only act) \u2014 not assessable from overhead 1 fps / 512 px video. Routed to manual inspection.",
+      "sequence_ok": true,
+      "duration_ok": null,
+      "created_at": "2026-06-18T13:07:36.798587+00:00"
+    },
+    {
+      "run_id": "run-20260618-1e0ebcb5",
+      "item_id": "check-016",
+      "step_id": "step-016",
+      "sequence": 16,
+      "criterion": "Align both long braces to the rear interface of the base and fit until the bores align.",
+      "verdict": "Unable to Verify",
+      "confidence": 0.6,
+      "evidence_segment_id": null,
+      "evidence_timestamp_start": null,
+      "evidence_timestamp_end": null,
+      "keyframe_blob_path": null,
+      "reasoning": "None of the video segments clearly show long braces being mounted onto the rear interface of the base, nor do they provide a clear view of the rear interface to confirm presence or absence of the braces.",
+      "sequence_ok": true,
+      "duration_ok": null,
+      "created_at": "2026-06-18T13:07:47.265188+00:00"
+    },
+    {
+      "run_id": "run-20260618-1e0ebcb5",
+      "item_id": "check-017",
+      "step_id": "step-017",
+      "sequence": 17,
+      "criterion": "Insert the pin through the forward bore position of the rear chassis and push to a full seat.",
+      "verdict": "Unable to Verify",
+      "confidence": 0.7,
+      "evidence_segment_id": null,
+      "evidence_timestamp_start": null,
+      "evidence_timestamp_end": null,
+      "keyframe_blob_path": null,
+      "reasoning": "None of the video segments clearly show the pin being inserted into the forward bore position of the rear chassis, nor do they provide an unobstructed view of the relevant area to confirm presence or absence of the pin.",
+      "sequence_ok": true,
+      "duration_ok": null,
+      "created_at": "2026-06-18T13:07:58.275168+00:00"
+    },
+    {
+      "run_id": "run-20260618-1e0ebcb5",
+      "item_id": "check-018",
+      "step_id": "step-018",
+      "sequence": 18,
+      "criterion": "Insert the pin through the rearmost bore position of the rear chassis and push to a full seat.",
+      "verdict": "Unable to Verify",
+      "confidence": 0.7,
+      "evidence_segment_id": null,
+      "evidence_timestamp_start": null,
+      "evidence_timestamp_end": null,
+      "keyframe_blob_path": null,
+      "reasoning": "No segment clearly shows the pin being inserted into the rearmost bore position of the rear chassis, and the descriptions do not provide sufficient detail to confirm or refute the action.",
+      "sequence_ok": true,
+      "duration_ok": null,
+      "created_at": "2026-06-18T13:08:08.571995+00:00"
+    },
+    {
+      "run_id": "run-20260618-1e0ebcb5",
+      "item_id": "check-019",
+      "step_id": "step-019",
+      "sequence": 19,
+      "criterion": "Verify the rear chassis subgoal is complete, including pin seating, brace alignment, and absence of play.",
+      "verdict": "Requires Inspection",
+      "confidence": 1.0,
+      "evidence_segment_id": null,
+      "evidence_timestamp_start": null,
+      "evidence_timestamp_end": null,
+      "keyframe_blob_path": null,
+      "reasoning": "Fine-detail QC criterion (torque, seating, orientation, rotation, small-part count, or an inspection-only act) \u2014 not assessable from overhead 1 fps / 512 px video. Routed to manual inspection.",
+      "sequence_ok": false,
+      "duration_ok": null,
+      "created_at": "2026-06-18T13:08:08.572216+00:00"
+    },
+    {
+      "run_id": "run-20260618-1e0ebcb5",
+      "item_id": "check-020",
+      "step_id": "step-020",
+      "sequence": 20,
+      "criterion": "Verify the parts required for this chapter, including screw identification.",
+      "verdict": "Requires Inspection",
+      "confidence": 1.0,
+      "evidence_segment_id": null,
+      "evidence_timestamp_start": null,
+      "evidence_timestamp_end": null,
+      "keyframe_blob_path": null,
+      "reasoning": "Fine-detail QC criterion (torque, seating, orientation, rotation, small-part count, or an inspection-only act) \u2014 not assessable from overhead 1 fps / 512 px video. Routed to manual inspection.",
+      "sequence_ok": true,
+      "duration_ok": null,
+      "created_at": "2026-06-18T13:08:08.572283+00:00"
+    },
+    {
+      "run_id": "run-20260618-1e0ebcb5",
+      "item_id": "check-021",
+      "step_id": "step-021",
+      "sequence": 21,
+      "criterion": "Align the front bracket to the front chassis interface and hold the alignment.",
+      "verdict": "Unable to Verify",
+      "confidence": 0.6,
+      "evidence_segment_id": null,
+      "evidence_timestamp_start": null,
+      "evidence_timestamp_end": null,
+      "keyframe_blob_path": null,
+      "reasoning": "None of the video segments clearly show the front bracket being mounted onto the front chassis interface, nor do they provide a clear view of the relevant components or alignment process.",
+      "sequence_ok": true,
+      "duration_ok": null,
+      "created_at": "2026-06-18T13:08:19.558267+00:00"
+    },
+    {
+      "run_id": "run-20260618-1e0ebcb5",
+      "item_id": "check-022",
+      "step_id": "step-022",
+      "sequence": 22,
+      "criterion": "Install the verified screw by hand and tighten to firm finger torque.",
+      "verdict": "Compliant",
+      "confidence": 0.9,
+      "evidence_segment_id": "seg-015",
+      "evidence_timestamp_start": 266.0,
+      "evidence_timestamp_end": 291.0,
+      "keyframe_blob_path": "keyframes/run-20260618-1e0ebcb5/step-022.jpg",
+      "reasoning": "Segment seg-015 shows a screw being tightened through a white perforated beam into a pink connector, which matches the observable action of installing the screw onto the front bracket.",
+      "sequence_ok": true,
+      "duration_ok": null,
+      "created_at": "2026-06-18T13:08:30.120368+00:00"
+    },
+    {
+      "run_id": "run-20260618-1e0ebcb5",
+      "item_id": "check-023",
+      "step_id": "step-023",
+      "sequence": 23,
+      "criterion": "Verify the parts required for this chapter, including washer count.",
+      "verdict": "Requires Inspection",
+      "confidence": 1.0,
+      "evidence_segment_id": null,
+      "evidence_timestamp_start": null,
+      "evidence_timestamp_end": null,
+      "keyframe_blob_path": null,
+      "reasoning": "Fine-detail QC criterion (torque, seating, orientation, rotation, small-part count, or an inspection-only act) \u2014 not assessable from overhead 1 fps / 512 px video. Routed to manual inspection.",
+      "sequence_ok": false,
+      "duration_ok": null,
+      "created_at": "2026-06-18T13:08:30.120577+00:00"
+    },
+    {
+      "run_id": "run-20260618-1e0ebcb5",
+      "item_id": "check-024",
+      "step_id": "step-024",
+      "sequence": 24,
+      "criterion": "Assemble the stack in order: wheel, washer, acorn nut, and install each acorn nut by hand.",
+      "verdict": "Compliant",
+      "confidence": 0.95,
+      "evidence_segment_id": "seg-010",
+      "evidence_timestamp_start": 171.0,
+      "evidence_timestamp_end": 196.0,
+      "keyframe_blob_path": "keyframes/run-20260618-1e0ebcb5/step-024.jpg",
+      "reasoning": "Segment seg-010 clearly shows the black wheel being mounted onto the gray axle, which is inserted through a white perforated beam and a pink connector, matching the observable action described.",
+      "sequence_ok": true,
+      "duration_ok": null,
+      "created_at": "2026-06-18T13:08:41.161909+00:00"
+    },
+    {
+      "run_id": "run-20260618-1e0ebcb5",
+      "item_id": "check-025",
+      "step_id": "step-025",
+      "sequence": 25,
+      "criterion": "Install the pulley on the rear axle first, then assemble the stack in order: wheel, washer, acorn nut.",
+      "verdict": "Unable to Verify",
+      "confidence": 0.65,
+      "evidence_segment_id": null,
+      "evidence_timestamp_start": null,
+      "evidence_timestamp_end": null,
+      "keyframe_blob_path": null,
+      "reasoning": "None of the video segments clearly show the pulley being installed on the rear axle prior to the wheel stack; the overhead view cannot distinguish the pulley from other pink connectors used in the build.",
+      "sequence_ok": true,
+      "duration_ok": null,
+      "created_at": "2026-06-18T13:08:51.481646+00:00"
+    },
+    {
+      "run_id": "run-20260618-1e0ebcb5",
+      "item_id": "check-026",
+      "step_id": "step-026",
+      "sequence": 26,
+      "criterion": "Verify washer presence behind every wheel, acorn nut tightness, and rear pulley presence.",
+      "verdict": "Requires Inspection",
+      "confidence": 1.0,
+      "evidence_segment_id": null,
+      "evidence_timestamp_start": null,
+      "evidence_timestamp_end": null,
+      "keyframe_blob_path": null,
+      "reasoning": "Fine-detail QC criterion (torque, seating, orientation, rotation, small-part count, or an inspection-only act) \u2014 not assessable from overhead 1 fps / 512 px video. Routed to manual inspection.",
+      "sequence_ok": true,
+      "duration_ok": null,
+      "created_at": "2026-06-18T13:08:51.481828+00:00"
+    },
+    {
+      "run_id": "run-20260618-1e0ebcb5",
+      "item_id": "check-027",
+      "step_id": "step-027",
+      "sequence": 27,
+      "criterion": "Verify the complete vehicle against the state strip, ensuring state 13 - complete assembly.",
+      "verdict": "Requires Inspection",
+      "confidence": 1.0,
+      "evidence_segment_id": null,
+      "evidence_timestamp_start": null,
+      "evidence_timestamp_end": null,
+      "keyframe_blob_path": null,
+      "reasoning": "Fine-detail QC criterion (torque, seating, orientation, rotation, small-part count, or an inspection-only act) \u2014 not assessable from overhead 1 fps / 512 px video. Routed to manual inspection.",
+      "sequence_ok": false,
+      "duration_ok": null,
+      "created_at": "2026-06-18T13:08:51.481883+00:00"
+    },
+    {
+      "run_id": "run-20260618-1e0ebcb5",
+      "item_id": "check-028",
+      "step_id": "step-028",
+      "sequence": 28,
+      "criterion": "Audit fasteners and hardware, including pin type, orientation, acorn nut tightness, washer presence, and rear pulley presence.",
+      "verdict": "Requires Inspection",
+      "confidence": 1.0,
+      "evidence_segment_id": null,
+      "evidence_timestamp_start": null,
+      "evidence_timestamp_end": null,
+      "keyframe_blob_path": null,
+      "reasoning": "Fine-detail QC criterion (torque, seating, orientation, rotation, small-part count, or an inspection-only act) \u2014 not assessable from overhead 1 fps / 512 px video. Routed to manual inspection.",
+      "sequence_ok": true,
+      "duration_ok": null,
+      "created_at": "2026-06-18T13:08:51.481927+00:00"
+    },
+    {
+      "run_id": "run-20260618-1e0ebcb5",
+      "item_id": "check-029",
+      "step_id": "step-029",
+      "sequence": 29,
+      "criterion": "Record the build and release the vehicle on PASS or quarantine on FAIL.",
+      "verdict": "Requires Inspection",
+      "confidence": 1.0,
+      "evidence_segment_id": null,
+      "evidence_timestamp_start": null,
+      "evidence_timestamp_end": null,
+      "keyframe_blob_path": null,
+      "reasoning": "Fine-detail QC criterion (torque, seating, orientation, rotation, small-part count, or an inspection-only act) \u2014 not assessable from overhead 1 fps / 512 px video. Routed to manual inspection.",
+      "sequence_ok": true,
+      "duration_ok": null,
+      "created_at": "2026-06-18T13:08:51.481962+00:00"
+    }
+  ],
+  "adherence_score": 1.0,
+  "summary": {
+    "total": 29,
+    "compliant": 2,
+    "deviation": 0,
+    "unable_to_verify": 8,
+    "requires_inspection": 19,
+    "adherence_score": 1.0
+  }
+}

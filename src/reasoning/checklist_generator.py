@@ -29,10 +29,10 @@ import json
 import logging
 from datetime import datetime, timezone
 
-from openai import AzureOpenAI
 from tenacity import retry, stop_after_attempt, wait_exponential
 
 from config import cfg
+from src.openai_client import get_openai_client
 
 logger = logging.getLogger(__name__)
 
@@ -40,37 +40,57 @@ logger = logging.getLogger(__name__)
 SYSTEM_PROMPT = """You are a compliance checklist generator for manufacturing quality assurance.
 Given a list of SOP steps, produce one compliance checklist item per step.
 
+The verification evidence is overhead production video sampled at ~1 frame/second and
+512x512 resolution. You MUST distinguish what such video can show (gross physical actions,
+which component is placed, assembly order) from what it CANNOT show (torque, fastener
+seating, pin orientation, "rotates freely", small-part counts, measurements, and purely
+inspection/verification/confirmation acts).
+
 Each item must have exactly these fields:
 - item_id: sequential ID formatted as "check-001", "check-002", etc.
 - step_id: copied from input step_id
 - sequence: copied from input sequence (integer)
-- criterion: one clear, observable statement of what must be visually true for the step to be compliant
+- criterion: one clear statement of the full requirement for the step to be compliant
+- observable_action: the SPECIFIC physical action or component placement that overhead video
+  could actually confirm for this step (e.g. "the front wheel assembly is mounted onto the
+  axle"). Strip out any torque / seating / orientation / rotation / measurement clause.
+  Preserve any physically distinct named component (e.g. "pulley", specific bracket) that
+  uniquely identifies THIS step versus similar adjacent steps — these should appear in
+  key_objects too.
+  If nothing about this step is visually observable, set to null.
+- key_objects: JSON list of specific named physical objects (e.g. ["pulley"]) that MUST
+  appear in the video for this step to be Compliant AND that uniquely distinguish this step
+  from similar adjacent steps. Set to [] for most steps. Only populate when a named part
+  is the discriminating evidence — not common objects like "wheel" or "pin" that appear in
+  many steps. Example: step "install pulley then rear wheel" → key_objects: ["pulley"].
+- verifiability: exactly one of:
+    "presence"    — a distinct physical action or component placement that should be visible
+    "sequence"    — correctness depends mainly on ORDER relative to other steps
+    "fine_detail" — requires inspection-level detail not assessable from overhead video
+                    (torque, seating, orientation, rotation checks, counting small parts,
+                     measurement, or a purely inspect/verify/confirm act with no visible action)
 - check_type: one of ["presence", "sequence", "duration"]
-  Use "presence" to verify the action was performed.
-  Use "sequence" to verify it occurred after the preceding required step.
-  Use "duration" when the step involves a timed wait or minimum hold time.
-  If check_type_hint is provided, use it unless the description clearly implies a different type.
+  Use the check_type_hint if provided, unless the description clearly implies a different type.
 - expected_duration_seconds: a number if check_type is "duration", otherwise null
 - sop_section: copied from input section field
+
+Guidance:
+- If a step is essentially "verify/confirm/check/ensure that X" with no distinct physical
+  action a camera would see, classify it "fine_detail" and set observable_action to null.
+- If a step places or assembles a visible component, classify "presence" and write
+  observable_action as the gross placement, dropping any torque/seating/rotation clause.
+- Be honest. Never label something "presence" if only a physical inspection could confirm it.
 
 Respond with exactly this JSON structure — no other keys, no explanation:
 {"items": [<item>, <item>, ...]}""".strip()
 
 
 _REQUIRED_ITEM_KEYS = frozenset({
-    "item_id", "step_id", "sequence", "criterion",
-    "check_type", "expected_duration_seconds", "sop_section",
+    "item_id", "step_id", "sequence", "criterion", "observable_action",
+    "verifiability", "check_type", "expected_duration_seconds", "sop_section",
 })
 _VALID_CHECK_TYPES = frozenset({"presence", "sequence", "duration"})
-
-
-def get_openai_client() -> AzureOpenAI:
-    """Initialise AzureOpenAI client."""
-    return AzureOpenAI(
-        azure_endpoint=cfg.openai_endpoint,
-        api_version=cfg.openai_api_version,
-        api_key=cfg.openai_api_key or None,
-    )
+_VALID_VERIFIABILITY = frozenset({"presence", "sequence", "fine_detail"})
 
 
 def _validate_items(items: list, run_id: str) -> list:
@@ -93,6 +113,35 @@ def _validate_items(items: list, run_id: str) -> list:
                 f"| run_id={run_id} — defaulting to presence"
             )
             item["check_type"] = "presence"
+
+        if item.get("verifiability") not in _VALID_VERIFIABILITY:
+            logger.warning(
+                f"Invalid verifiability '{item.get('verifiability')}' for {item.get('step_id')} "
+                f"| run_id={run_id} — defaulting to fine_detail (route to inspection)"
+            )
+            item["verifiability"] = "fine_detail"
+
+        # An item tagged observable but with no observable_action is contradictory —
+        # downgrade it to fine_detail so the engine routes it to inspection, not a guess.
+        if item["verifiability"] != "fine_detail" and not item.get("observable_action"):
+            item["verifiability"] = "fine_detail"
+
+        # key_objects is optional (not in _REQUIRED_ITEM_KEYS). Coerce to a clean
+        # list[str] so apply_absence_inference can rely on it — a bare string would
+        # otherwise iterate per-character and a non-list would raise.
+        ko = item.get("key_objects")
+        if ko is None:
+            item["key_objects"] = []
+        elif isinstance(ko, str):
+            item["key_objects"] = [ko]
+        elif isinstance(ko, list):
+            item["key_objects"] = [str(x) for x in ko if str(x).strip()]
+        else:
+            logger.warning(
+                f"Invalid key_objects {ko!r} for {item.get('step_id')} "
+                f"| run_id={run_id} — setting empty list"
+            )
+            item["key_objects"] = []
 
         dur = item.get("expected_duration_seconds")
         if dur is not None:
@@ -120,7 +169,9 @@ def _empty_checklist(sop_steps: dict, run_id: str) -> dict:
     }
 
 
-@retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=2, max=10))
+# Hardened retry to ride out sustained GPT-4o 429 rate-limit windows (matches
+# extract_compliance_fields). 6 attempts, backoff 5s→90s — up to ~5 min before giving up.
+@retry(stop=stop_after_attempt(6), wait=wait_exponential(multiplier=2, min=5, max=90))
 def generate_checklist(sop_steps: dict, run_id: str) -> dict:
     """
     Generate a structured compliance checklist from SOP steps using GPT-4o.
@@ -182,7 +233,13 @@ def generate_checklist(sop_steps: dict, run_id: str) -> dict:
         logger.error(
             f"Checklist JSON parse error | run_id={run_id} | {exc} | raw={raw[:400]}"
         )
-        raise
+        return {
+            "run_id": run_id,
+            "sop_document": sop_steps.get("sop_document", ""),
+            "created_at": datetime.now(timezone.utc).isoformat(),
+            "total_items": 0,
+            "items": [],
+        }
 
     items = _validate_items(parsed.get("items", []), run_id)
 

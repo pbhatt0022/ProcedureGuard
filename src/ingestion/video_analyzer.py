@@ -1,308 +1,255 @@
 """
 Layer 2 — Video Analyzer
 
-Two-phase manufacturing video analysis pipeline:
+GPT-4o Vision compliance field extraction from time-windowed video segments.
 
-Phase 1:  Azure AI Content Understanding (prebuilt-video) — segment detection,
-          timestamps, and natural language description of each scene.
-Phase 2:  GPT-4o compliance field extraction — ppe_status, tool_in_use,
-          component_contact, visible_safety_concern, action_observed.
+Duration probed via OpenCV. Segments are synthesized by build_time_windowed_segments()
+(25s windows, 6s overlap), then GPT-4o Vision fills compliance fields per window.
 
 Input:  Blob Storage SAS URL or public HTTPS URL to a manufacturing video
 Output: dict matching schemas/video_observations.json
-Azure:  Azure AI Content Understanding (API 2025-11-01 GA)
-        Azure OpenAI GPT-4o (Phase 2 compliance field extraction)
+Azure:  Azure OpenAI GPT-4o (compliance field extraction)
 Owner:  Priya (video pipeline)
-
-Key constraints (see docs/KNOWN_ISSUES.md):
-  - Frame sampling: ~1 fps — fast transitions may be missed
-  - Frame resolution: 512x512 px — fine motor detail unreliable
-  - Use Blob URL reference, NOT binary upload (4GB/2hr vs 200MB limit)
-  - Base analyzer: prebuilt-video (NOT prebuilt-videoSearch)
-  - Minimum segment length ~15s for reliable field extraction
 """
+import base64
 import json
 import logging
-from datetime import datetime, timezone
+import math
 
-from azure.ai.contentunderstanding import ContentUnderstandingClient
-from azure.ai.contentunderstanding.models import (
-    AnalysisContentKind,
-    AnalysisInput,
-    ContentAnalyzer,
-    ContentFieldDefinition,
-    ContentFieldSchema,
-    ContentFieldType,
-    GenerationMethod,
-)
-from azure.core.credentials import AzureKeyCredential
-from azure.core.exceptions import ResourceExistsError
-from azure.identity import DefaultAzureCredential
-from openai import AzureOpenAI
+import cv2
 from tenacity import retry, stop_after_attempt, wait_exponential
 
 from config import cfg
+from src.openai_client import get_openai_client
 
 logger = logging.getLogger(__name__)
 
-
-def _get_field(fields: dict, name: str):
-    """Extract a string value from a Content Understanding fields dict. Returns None if absent."""
-    f = fields.get(name)
-    return f.value if f else None
+_PHASE2_MAX_FRAMES = 6   # frames sent to GPT-4o per segment
+_PHASE2_FRAME_SIZE = 768  # resize longest edge before encoding (detail:high tiles it for finer parts)
 
 
-# ── Compliance field schema ──────────────────────────────────────────────────
-# Extends prebuilt-video with compliance-specific fields.
-# See docs/ARCHITECTURE.md for design rationale.
-# NOTE: If you update these fields, re-run create_or_update_analyzer().
-COMPLIANCE_FIELD_SCHEMA = ContentFieldSchema(
-    fields={
-        "ppe_status": ContentFieldDefinition(
-            type=ContentFieldType.STRING,
-            method=GenerationMethod.CLASSIFY,
-            description="PPE compliance status of the worker in this segment",
-            enum=["compliant", "non-compliant", "not-visible"],
-        ),
-        "tool_in_use": ContentFieldDefinition(
-            type=ContentFieldType.STRING,
-            method=GenerationMethod.GENERATE,
-            description="Identify the tool currently being used by the worker. Return null if no tool is visible.",
-        ),
-        "component_contact": ContentFieldDefinition(
-            type=ContentFieldType.STRING,
-            method=GenerationMethod.GENERATE,
-            description="Describe which component or part the worker is contacting or assembling. Return null if unclear.",
-        ),
-        "visible_safety_concern": ContentFieldDefinition(
-            type=ContentFieldType.STRING,
-            method=GenerationMethod.CLASSIFY,
-            description="Whether a visible safety concern is present in this segment",
-            enum=["true", "false"],
-        ),
-        "action_observed": ContentFieldDefinition(
-            type=ContentFieldType.STRING,
-            method=GenerationMethod.GENERATE,
-            description="Natural language description of the primary action performed by the worker in this segment.",
-        ),
-    }
-)
+def _encode_frame(frame) -> bytes:
+    """Resize a frame to _PHASE2_FRAME_SIZE on its longest edge and JPEG-encode it."""
+    h, w = frame.shape[:2]
+    scale = _PHASE2_FRAME_SIZE / max(h, w)
+    if scale < 1.0:
+        frame = cv2.resize(frame, (int(w * scale), int(h * scale)), interpolation=cv2.INTER_AREA)
+    _, buf = cv2.imencode(".jpg", frame, [cv2.IMWRITE_JPEG_QUALITY, 85])
+    return buf.tobytes()
+
+
+def extract_keyframes_batch(video_url: str, targets: list[dict]) -> dict[str, bytes]:
+    """
+    Extract keyframes for multiple steps in a single open-capture pass.
+    targets is a list of {"step_id": str, "timestamp_s": float}.
+    Returns a dict of {step_id: jpeg_bytes}.
+    """
+    if not targets:
+        return {}
+
+    # Sort targets by timestamp ascending for reliable sequential seeking in FFmpeg/OpenCV
+    valid_targets = [t for t in targets if t.get("timestamp_s") is not None and t["timestamp_s"] >= 0]
+    sorted_targets = sorted(valid_targets, key=lambda x: x["timestamp_s"])
+    if not sorted_targets:
+        return {}
+
+    cap = cv2.VideoCapture(video_url)
+    if not cap.isOpened():
+        logger.warning(f"Batch extraction: OpenCV could not open video URL: {video_url[:60]}")
+        return {}
+
+    results: dict[str, bytes] = {}
+    for target in sorted_targets:
+        step_id = target["step_id"]
+        ts_s = target["timestamp_s"]
+        ts_ms = ts_s * 1000.0
+
+        cap.set(cv2.CAP_PROP_POS_MSEC, ts_ms)
+        ret, frame = cap.read()
+        if not ret or frame is None:
+            logger.warning(f"Batch extraction: Failed to read frame at {ts_s}s ({ts_ms}ms) for {step_id}")
+            continue
+
+        results[step_id] = _encode_frame(frame)
+
+    cap.release()
+    logger.info(f"Batch keyframe extraction complete | extracted={len(results)}/{len(targets)}")
+    return results
+
 
 
 # ── Phase 2: GPT-4o compliance field extraction ──────────────────────────────
 
-PHASE2_SYSTEM_PROMPT = """You are a manufacturing compliance field extractor.
-Analyze the provided video segment and extract structured compliance observations.
+PHASE2_SYSTEM_PROMPT = """You are a manufacturing compliance field extractor analyzing
+frames from one short video window of a manual assembly task.
 
 Return a JSON object with exactly these fields:
 {
   "ppe_status": "<compliant|non-compliant|not-visible>",
   "tool_in_use": "<tool name or null>",
-  "component_contact": "<component description or null>",
+  "component_contact": "<specific component description or null>",
   "visible_safety_concern": <true|false>,
-  "action_observed": "<one sentence describing the worker's primary action>"
+  "action_observed": "<one or two sentences describing the assembly action in concrete physical detail>"
 }
+
+For action_observed and component_contact, be CONCRETE and SPECIFIC about what is actually
+visible — a downstream step matches these descriptions against assembly instructions, so
+generic phrases like "assembling components by hand" are useless. In particular:
+- Name parts by visible attributes: colour, rough shape, kind (e.g. "a black pin",
+  "a white perforated beam", "a pink connector", "a wheel", "a screw", "an acorn nut").
+- Describe how parts are JOINED: inserting a pin through aligned holes, sliding a beam onto
+  a peg, pressing two brackets together, threading a nut onto a screw, mounting a wheel onto
+  an axle, aligning bores before insertion.
+- Note counts and positions when visible ("two beams", "the leftmost hole", "the rear axle").
+- If a fastener (pin / screw / nut) is being placed, say so explicitly and what it connects.
 
 Definitions:
 - ppe_status: "compliant" = required safety equipment visible and worn correctly;
   "non-compliant" = missing or incorrectly worn PPE; "not-visible" = cannot assess.
-- tool_in_use: name the specific tool (e.g. "Allen key", "pliers") or null if none used.
-- component_contact: identify the specific part being handled
-  (e.g. "M3 screw on X-axis motor bracket") or null if unclear.
-- visible_safety_concern: true only if a clear hazard is observable
-  (e.g. exposed wiring, dropped component, improper tool grip, hand near sharp edge).
-- action_observed: one concise sentence describing the primary manufacturing action.
+- tool_in_use: name the specific tool (e.g. "Allen key", "screwdriver") or null if hands only.
+- visible_safety_concern: true only if a clear hazard is observable.
 
+Describe only what is genuinely visible — do not invent detail you cannot see.
 Respond with the JSON object only. No explanation.""".strip()
 
 
-def get_openai_client() -> AzureOpenAI:
-    """Initialise AzureOpenAI client for Phase 2 compliance field extraction."""
-    return AzureOpenAI(
-        azure_endpoint=cfg.openai_endpoint,
-        api_version=cfg.openai_api_version,
-        api_key=cfg.openai_api_key or None,
-    )
+# Appended to PHASE2_SYSTEM_PROMPT only when run_video_phase2 is given the checklist
+# (A1: checklist-aware Phase 2). Grounds the vision pass in the actual SOP steps so the
+# downstream reasoner gets a direct item→window signal instead of guessing via vocabulary.
+PHASE2_CHECKLIST_INSTRUCTION = """
+ADDITIONALLY, you are given a numbered CHECKLIST of specific assembly steps. For THIS window's
+frames, decide which checklist steps are positively shown — the named component(s) being placed,
+joined, or fastened as described. Add one extra field to your JSON:
+  "observed_items": [ {"item_id": "<id>", "confidence": <0.0-1.0>} ]
+Include an entry ONLY for steps you can actually see in these frames (confidence >= 0.5); omit
+the rest. Match by physical appearance and action, not exact wording (e.g. a white perforated
+beam pressed onto pegs can satisfy "mount the short braces onto the base frame"). If no checklist
+step is visible in this window, return "observed_items": [].""".strip()
 
 
-# ── Phase 1: Content Understanding client ────────────────────────────────────
+def _format_checklist_for_vision(checklist_items: list[dict]) -> str:
+    """Render checklist items as a compact prompt block for the vision pass."""
+    lines = ["CHECKLIST — which of these steps are visible in THIS window:"]
+    for it in checklist_items:
+        keys = it.get("key_objects") or []
+        key_str = f"  (key objects: {', '.join(keys)})" if keys else ""
+        action = it.get("observable_action") or it.get("criterion") or ""
+        lines.append(f"- {it.get('item_id')}: {action}{key_str}")
+    return "\n".join(lines)
 
-def get_client() -> ContentUnderstandingClient:
+
+def probe_video_duration(video_url: str) -> float:
     """
-    Initialise Content Understanding client.
+    Best-effort video duration in seconds via OpenCV.
 
-    Credential priority:
-      1. API key (AZURE_CONTENT_UNDERSTANDING_KEY in .env) — works with the
-         regional endpoint (https://eastus.api.cognitive.microsoft.com/).
-         Use this for local dev when the Foundry hub lacks a custom subdomain.
-      2. DefaultAzureCredential (az login) — requires a custom subdomain
-         endpoint (https://<name>.cognitiveservices.azure.com/ or
-         https://<name>.services.ai.azure.com/).
+    Drives time-windowed segmentation (build_time_windowed_segments).
+    Returns 0.0 if the video can't be opened.
     """
-    if cfg.content_understanding_key:
-        logger.debug("Content Understanding: using AzureKeyCredential")
-        return ContentUnderstandingClient(
-            endpoint=cfg.content_understanding_endpoint,
-            credential=AzureKeyCredential(cfg.content_understanding_key),
-        )
-    logger.debug("Content Understanding: using DefaultAzureCredential")
-    return ContentUnderstandingClient(
-        endpoint=cfg.content_understanding_endpoint,
-        credential=DefaultAzureCredential(),
-    )
+    cap = cv2.VideoCapture(video_url)
+    if not cap.isOpened():
+        logger.warning("probe_video_duration: OpenCV could not open video URL")
+        return 0.0
+    fps = cap.get(cv2.CAP_PROP_FPS) or 0.0
+    frames = cap.get(cv2.CAP_PROP_FRAME_COUNT) or 0.0
+    cap.release()
+    return round(frames / fps, 1) if fps > 0 else 0.0
 
 
-@retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=2, max=10))
-def create_or_update_analyzer() -> None:
+def build_time_windowed_segments(
+    total_duration_s: float,
+    *,
+    window_seconds: float = 25.0,
+    overlap_seconds: float = 6.0,
+    max_windows: int = 20,
+) -> list[dict]:
     """
-    Register the custom compliance video analyzer in Content Understanding.
-    Run once during setup, or whenever the field schema changes.
-    Safe to call on every deploy — creates or replaces.
+    Synthesize overlapping fixed-duration segment stubs spanning the whole video.
 
-    NOTE: API version 2025-11-01 (GA). Never use preview versions.
-    NOTE: If you get a model deployment error, you may need to deploy
-          gpt-4.1-mini and text-embedding-3-large in Azure AI Foundry first.
-          See docs/KNOWN_ISSUES.md.
-    """
-    client = get_client()
-    analyzer_id = cfg.content_understanding_analyzer_id
-
-    # NOTE: Do not specify `models` for standalone AIServices resources —
-    # the service uses its own managed GPT deployment.
-    # Only set models={"completion": "<deployment-name>"} when using a
-    # full AI Foundry project with explicit model deployments.
-    analyzer = ContentAnalyzer(
-        base_analyzer_id="prebuilt-video",
-        field_schema=COMPLIANCE_FIELD_SCHEMA,
-    )
-
-    logger.info(f"Creating/updating analyzer | id={analyzer_id}")
-    try:
-        poller = client.begin_create_analyzer(analyzer_id, analyzer)
-        poller.result()
-    except ResourceExistsError:
-        # Analyzer already exists — delete and recreate to ensure schema is current.
-        # Content Understanding API does not support in-place schema updates once
-        # the analyzer is in 'succeeded' state; DELETE + PUT is the only update path.
-        logger.info(f"Analyzer already exists — deleting to force schema update | id={analyzer_id}")
-        client.delete_analyzer(analyzer_id)
-        poller = client.begin_create_analyzer(analyzer_id, analyzer)
-        poller.result()
-    logger.info(f"Analyzer ready | id={analyzer_id}")
-
-
-@retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=2, max=10))
-def analyze_video(video_url: str, run_id: str) -> object:
-    """
-    Submit a manufacturing video for segment detection (Phase 1).
-
-    Uses prebuilt-video, which reliably returns results on a standalone
-    AIServices resource. Compliance fields are populated separately by
-    run_video_phase2() via a direct GPT-4o call.
+    The prebuilt-video base analyzer segments by shot/scene cut. Continuous
+    single-take assembly footage has no cuts, so it collapses to one segment
+    covering the entire clip — which destroys evidence localization and forces
+    mass abstention downstream (every criterion is judged against the same
+    4-minute blob). This replaces that single segment with overlapping time
+    windows, each carrying real start/end timestamps. The overlap means an
+    action straddling what would otherwise be a hard cut still falls fully
+    inside at least one window. run_video_phase2() then fills the compliance
+    fields per window via GPT-4o Vision.
 
     Args:
-        video_url: HTTPS URL or Blob Storage SAS URL to the video.
-        run_id:    Pipeline run identifier.
+        total_duration_s: Total video duration in seconds.
+        window_seconds:   Target window length. ~25s clears the ~15s minimum
+                          for reliable field extraction (see KNOWN_ISSUES) while
+                          keeping evidence localized to a tight slice.
+        overlap_seconds:  Overlap between consecutive windows. Clamped to at
+                          most half of window_seconds.
+        max_windows:      Ceiling on window count — caps GPT-4o cost on long clips.
+                          When the target window/overlap would exceed this, both
+                          are stretched proportionally so the cap always holds.
 
     Returns:
-        Raw AnalysisResult object from the SDK. Pass to parse_observations().
+        List of segment dicts matching schemas/video_observations.json, with
+        compliance fields nulled out for run_video_phase2() to populate.
     """
-    client = get_client()
-    logger.info(f"Submitting video for analysis | run_id={run_id} | url={video_url[:60]}...")
+    if total_duration_s <= 0:
+        return []
 
-    # NOTE: Using prebuilt-video (base) instead of the custom compliance analyzer.
-    # Custom GENERATE/CLASSIFY fields silently return 0 segments on standalone
-    # AIServices resources without a linked Azure OpenAI deployment.
-    # Compliance fields are extracted by run_video_phase2() instead.
-    # See docs/KNOWN_ISSUES.md.
-    poller = client.begin_analyze(
-        analyzer_id="prebuilt-video",
-        inputs=[AnalysisInput(url=video_url)],
-    )
+    overlap_seconds = max(0.0, min(overlap_seconds, window_seconds / 2))
+    stride = window_seconds - overlap_seconds
 
-    logger.info(f"Polling for result | run_id={run_id}")
-    result = poller.result()
-    logger.info(f"Analysis complete | run_id={run_id} | segments={len(result.contents)}")
-    return result
+    if total_duration_s <= window_seconds:
+        n = 1
+    else:
+        n = 1 + math.ceil((total_duration_s - window_seconds) / stride)
 
+    if n > max_windows:
+        # Too many windows at the target size/overlap — stretch both
+        # proportionally so the cap holds while keeping the same overlap ratio.
+        n = max_windows
+        stride = total_duration_s / n
+        window_seconds = stride + overlap_seconds
 
-def parse_observations(raw_result: object, run_id: str, video_url: str) -> dict:
-    """
-    Convert a Content Understanding AnalysisResult into Observations JSON.
-
-    Compliance fields (ppe_status, tool_in_use, etc.) will be null after this
-    call. Call run_video_phase2() on the returned dict to fill them via GPT-4o.
-
-    Args:
-        raw_result:  AnalysisResult from analyze_video().
-        run_id:      Pipeline run identifier.
-        video_url:   Source video URL (recorded for traceability).
-
-    Returns:
-        dict matching schemas/video_observations.json (compliance fields null)
-    """
     segments = []
-
-    for i, content in enumerate(raw_result.contents):
-        if content.kind != AnalysisContentKind.AUDIO_VISUAL:
-            logger.warning(f"Skipping non-audio-visual content at index {i}")
-            continue
-
-        seg_id = f"seg-{str(i + 1).zfill(3)}"
-        start_s = (content.start_time_ms / 1000.0) if content.start_time_ms is not None else 0.0
-        end_s = (content.end_time_ms / 1000.0) if content.end_time_ms is not None else 0.0
-
-        fields = content.fields or {}
-        segment = {
-            "segment_id": seg_id,
-            "start_time_seconds": start_s,
-            "end_time_seconds": end_s,
-            # Content Understanding natural language description of the segment.
-            # Used as Phase 2 input and Agent 2 reasoning context.
-            "description": getattr(content, "markdown", None) or "",
-            "ppe_status": _get_field(fields, "ppe_status"),
-            "tool_in_use": _get_field(fields, "tool_in_use"),
-            "component_contact": _get_field(fields, "component_contact"),
-            # visible_safety_concern comes back as "true"/"false" string — convert to bool
-            "visible_safety_concern": _get_field(fields, "visible_safety_concern") == "true",
-            "action_observed": _get_field(fields, "action_observed"),
-        }
-        segments.append(segment)
-
-    return {
-        "run_id": run_id,
-        "video_file": video_url,
-        "analyzer_id": cfg.content_understanding_analyzer_id,
-        "analyzed_at": datetime.now(timezone.utc).isoformat(),
-        "total_segments": len(segments),
-        "segments": segments,
-    }
+    for i in range(n):
+        start = i * stride
+        segments.append({
+            "segment_id": f"seg-{str(i + 1).zfill(3)}",
+            "start_time_seconds": round(start, 1),
+            "end_time_seconds": round(min(start + window_seconds, total_duration_s), 1),
+            "description": "",
+            "ppe_status": None,
+            "tool_in_use": None,
+            "component_contact": None,
+            "visible_safety_concern": False,
+            "action_observed": None,
+        })
+    return segments
 
 
-@retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=2, max=10))
+@retry(stop=stop_after_attempt(6), wait=wait_exponential(multiplier=2, min=5, max=90))
 def extract_compliance_fields(
     description: str,
     segment_id: str,
     run_id: str,
     *,
-    keyframe_image_url: str | None = None,
+    keyframe_images: list[str] | None = None,
+    checklist_items: list[dict] | None = None,
 ) -> dict:
     """
     Phase 2: extract structured compliance fields using GPT-4o.
 
-    Sends the Content Understanding segment description (and optionally a
-    keyframe image URL) to GPT-4o and returns the 5 compliance fields.
-
-    When keyframe_image_url is provided (Vision mode), GPT-4o sees both the
-    text description and the actual frame — more accurate than text alone.
-    Generate the URL with blob_client.get_keyframe_sas_url(run_id, segment_id).
+    Sends an optional text hint plus a list of keyframe images (base64 data
+    URIs) to GPT-4o. Vision mode is used whenever keyframe_images is non-empty;
+    in practice run_video_phase2() always supplies frames, so text-only mode is
+    a defensive fallback for when OpenCV cannot open the clip.
 
     Args:
-        description:        Markdown text from Content Understanding for this segment.
-        segment_id:         Segment identifier for logging (e.g. "seg-001").
-        run_id:             Pipeline run identifier for logging.
-        keyframe_image_url: Optional Blob SAS URL to the keyframe JPG.
-                            When provided, uses GPT-4o Vision mode.
+        description:     Optional text hint for this segment (usually empty —
+                         the frames are the primary signal).
+        segment_id:      Segment identifier for logging (e.g. "seg-001").
+        run_id:          Pipeline run identifier for logging.
+        keyframe_images: List of base64 JPEG data URIs sampled by
+                         run_video_phase2(). When provided, GPT-4o sees the
+                         actual frames alongside the text description.
 
     Returns:
         dict with keys: ppe_status, tool_in_use, component_contact,
@@ -316,42 +263,57 @@ def extract_compliance_fields(
         "action_observed": None,
     }
 
-    if not description.strip() and not keyframe_image_url:
-        logger.warning(f"Phase 2: no description or image for {segment_id} | run_id={run_id}")
+    has_images = bool(keyframe_images)
+    if not description.strip() and not has_images:
+        logger.warning(f"Phase 2: no description or images for {segment_id} | run_id={run_id}")
         return _null_result
 
     # Build user message — text-only or multimodal (vision)
-    if keyframe_image_url:
-        user_content = [
+    if has_images:
+        user_content: list = [
             {
                 "type": "text",
                 "text": (
                     f"Segment: {segment_id}\n\n"
-                    f"Content Understanding description:\n{description}"
+                    f"The following {len(keyframe_images)} frames are evenly sampled "
+                    f"from this video segment. Analyze them to extract compliance fields."
                 ),
             },
-            {
-                "type": "image_url",
-                "image_url": {"url": keyframe_image_url, "detail": "high"},
-            },
         ]
-        logger.debug(f"Phase 2 vision mode | {segment_id} | run_id={run_id}")
+        for img_data_uri in keyframe_images:
+            user_content.append({
+                "type": "image_url",
+                "image_url": {"url": img_data_uri, "detail": "high"},
+            })
+        logger.debug(f"Phase 2 vision mode | {segment_id} | frames={len(keyframe_images)} | run_id={run_id}")
     else:
         user_content = (
             f"Segment: {segment_id}\n\n"
-            f"Content Understanding description:\n{description}"
+            f"Text hint (no frames available):\n{description}"
         )
         logger.debug(f"Phase 2 text mode | {segment_id} | run_id={run_id}")
+
+    # A1: checklist-aware mode — append the SOP steps to the prompt and ask the
+    # vision pass which ones are visible here. Only active when checklist_items given,
+    # so default (text-asserting) callers see the unchanged 5-field behaviour.
+    system_prompt = PHASE2_SYSTEM_PROMPT
+    if checklist_items:
+        system_prompt = f"{PHASE2_SYSTEM_PROMPT}\n\n{PHASE2_CHECKLIST_INSTRUCTION}"
+        checklist_text = _format_checklist_for_vision(checklist_items)
+        if isinstance(user_content, list):
+            user_content.append({"type": "text", "text": checklist_text})
+        else:
+            user_content = f"{user_content}\n\n{checklist_text}"
 
     client = get_openai_client()
     response = client.chat.completions.create(
         model=cfg.openai_deployment,
         messages=[
-            {"role": "system", "content": PHASE2_SYSTEM_PROMPT},
+            {"role": "system", "content": system_prompt},
             {"role": "user", "content": user_content},
         ],
         response_format={"type": "json_object"},
-        max_tokens=300,
+        max_tokens=500 if checklist_items else 300,
         temperature=0,
     )
 
@@ -362,55 +324,118 @@ def extract_compliance_fields(
         logger.error(f"Phase 2 JSON parse error | {segment_id} | {exc} | raw={raw[:200]}")
         return _null_result
 
-    return {
+    result = {
         "ppe_status": fields.get("ppe_status"),
         "tool_in_use": fields.get("tool_in_use"),
         "component_contact": fields.get("component_contact"),
         "visible_safety_concern": bool(fields.get("visible_safety_concern", False)),
         "action_observed": fields.get("action_observed"),
     }
+    # Only surface observed_items in checklist-aware mode — keeps the default 5-key contract.
+    if checklist_items:
+        raw_items = fields.get("observed_items") or []
+        observed = []
+        for entry in raw_items:
+            if isinstance(entry, dict) and entry.get("item_id"):
+                try:
+                    conf = float(entry.get("confidence", 0.0))
+                except (TypeError, ValueError):
+                    conf = 0.0
+                if conf >= 0.5:
+                    observed.append({"item_id": entry["item_id"], "confidence": round(conf, 2)})
+        result["observed_items"] = observed
+    return result
 
 
 def run_video_phase2(
     observations: dict,
     run_id: str,
     *,
-    keyframe_urls: dict | None = None,
+    video_url: str | None = None,
+    checklist: dict | None = None,
 ) -> dict:
     """
     Fill compliance fields for all segments using GPT-4o (Phase 2).
 
-    Iterates the segments in an observations dict produced by parse_observations(),
-    calls extract_compliance_fields() for each, and updates the dict in place.
+    Iterates segments produced by build_time_windowed_segments(), extracts
+    keyframes from the video using OpenCV (Vision mode), and calls GPT-4o for
+    each segment. Falls back to text-only mode if keyframe extraction fails.
 
     Args:
-        observations:   Output of parse_observations() — modified in place.
-        run_id:         Pipeline run identifier.
-        keyframe_urls:  Optional {segment_id: blob_sas_url} for Vision mode.
-                        When provided, each segment's keyframe image is sent
-                        alongside the text description (higher accuracy).
-                        Generate with blob_client.get_keyframe_sas_url().
-                        If omitted, uses text-only mode (Content Understanding markdown).
+        observations: Observations dict with segment stubs — modified in place.
+        run_id:       Pipeline run identifier.
+        video_url:    HTTPS or Blob SAS URL to the video. When provided,
+                      OpenCV extracts frames for Vision mode. If omitted,
+                      falls back to text-only mode (less accurate).
 
     Returns:
         The same observations dict with all 5 compliance fields populated.
     """
     segments = observations.get("segments", [])
-    logger.info(f"Phase 2 start | run_id={run_id} | segments={len(segments)}")
+    # A1: checklist-aware grounding — pass a compact item list (id + action + key_objects)
+    # to each window's vision call so it reports which SOP steps it actually sees.
+    checklist_items = None
+    if checklist:
+        checklist_items = [
+            {
+                "item_id": it.get("item_id"),
+                "observable_action": it.get("observable_action"),
+                "criterion": it.get("criterion"),
+                "key_objects": it.get("key_objects"),
+            }
+            for it in checklist.get("items", [])
+            if it.get("verifiability") != "fine_detail" and it.get("observable_action")
+        ] or None
+    logger.info(
+        f"Phase 2 start | run_id={run_id} | segments={len(segments)} | "
+        f"checklist_aware={bool(checklist_items)}"
+    )
+
+    # Pre-open the video capture once and reuse across segments to avoid
+    # reconnecting for every segment on multi-segment videos.
+    cap = None
+    if video_url:
+        cap = cv2.VideoCapture(video_url)
+        if not cap.isOpened():
+            logger.warning(f"Phase 2: OpenCV could not open video — falling back to text mode | run_id={run_id}")
+            cap = None
 
     for segment in segments:
         seg_id = segment["segment_id"]
         description = segment.get("description", "")
-        image_url = (keyframe_urls or {}).get(seg_id)
+        start_ms = (segment.get("start_time_seconds") or 0) * 1000
+        end_ms = (segment.get("end_time_seconds") or 0) * 1000
+
+        keyframe_images: list[str] = []
+        if cap is not None and end_ms > start_ms:
+            duration_ms = end_ms - start_ms
+            num_frames = min(_PHASE2_MAX_FRAMES, max(4, round(duration_ms / 5_000)))
+            step = duration_ms / max(num_frames - 1, 1) if num_frames > 1 else duration_ms / 2
+            timestamps = [start_ms + i * step for i in range(num_frames)] if num_frames > 1 else [start_ms + duration_ms / 2]
+
+            for ts_ms in timestamps:
+                cap.set(cv2.CAP_PROP_POS_MSEC, ts_ms)
+                ret, frame = cap.read()
+                if not ret or frame is None:
+                    continue
+                b64 = base64.b64encode(_encode_frame(frame)).decode("ascii")
+                keyframe_images.append(f"data:image/jpeg;base64,{b64}")
+
+            logger.debug(f"Phase 2 extracted {len(keyframe_images)} frames | {seg_id}")
 
         fields = extract_compliance_fields(
-            description, seg_id, run_id, keyframe_image_url=image_url
+            description, seg_id, run_id,
+            keyframe_images=keyframe_images or None,
+            checklist_items=checklist_items,
         )
         segment.update(fields)
 
-        mode = "vision" if image_url else "text"
+        mode = "vision" if keyframe_images else "text"
         action_preview = (fields.get("action_observed") or "")[:60]
         logger.info(f"Phase 2 {mode} done | {seg_id} | action={action_preview!r}")
+
+    if cap is not None:
+        cap.release()
 
     logger.info(f"Phase 2 complete | run_id={run_id}")
     return observations

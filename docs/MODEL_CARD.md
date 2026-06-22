@@ -13,8 +13,8 @@
 | Model family | OpenAI GPT-4o / GPT-4.1 |
 | Deployment | Azure OpenAI — hosted in the project's Azure AI Foundry resource |
 | API | Azure OpenAI Chat Completions API |
-| Roles in pipeline | (1) Checklist generation: converts Document Intelligence Steps JSON into structured compliance checklist. (2) Per-step compliance reasoning: compares compliance criterion against Content Understanding observations, produces structured verdict. |
-| Output format | Structured JSON via function calling — checklist entries and per-step verdicts |
+| Roles in pipeline | (1) Checklist generation + verifiability tiering (presence / sequence / fine_detail + observable_action). (2) Phase 2 Vision: per-window compliance field extraction from sampled frames. (3) Per-step reasoning: matches each observable_action to a time window → one of four verdicts. |
+| Output format | Structured JSON — verdicts are Compliant / Deviation Detected / Requires Inspection / Unable to Verify |
 
 ### Azure AI Content Understanding (Custom Video Analyzer)
 
@@ -25,8 +25,8 @@
 | Base analyzer | `prebuilt-video` |
 | Custom field schema | `ppe_status`, `tool_in_use`, `component_contact`, `visible_safety_concern`, `action_observed` |
 | Frame sampling | ~1 fps |
-| Frame resolution | 512×512 px (all frames scaled) |
-| Segmentation | Scene-boundary segmentation |
+| Frame resolution | Phase 1 ~512 px; Phase 2 GPT-4o Vision at 768 px, `detail:"high"` |
+| Segmentation | Fixed ~25s time windows imposed by the pipeline (scene-boundary segmentation collapses continuous footage to one segment — see KNOWN_ISSUES) |
 | Output | Structured JSON per segment — one value per field per segment, with timestamps |
 
 ---
@@ -75,7 +75,33 @@ Quality assurance documentation for manufacturing production runs. A Quality Ass
 
 **Prusa MK3S+ Assembly Manual + OPENMARCIE videos**
 - Real SOP document paired with real assembly footage
-- Used for: end-to-end pipeline smoke test and SOP extraction coverage evaluation
+- Used for: SOP extraction coverage evaluation (Week 3 benchmark)
+
+**STEMFIE Vehicle Kit Assembly Manual (demo SOP)**
+- 14-page teammate-generated manual with documented error modes (wrong pin type, fastener substitution, missing washer)
+- Used for: end-to-end pipeline runs and the June 15 deviation-detection demo
+
+### Status (June 16, 2026 — supersedes June 12)
+
+The June 12 single-segment results (`chassis_error` "2 deviations") were later found to be **false
+positives**: with the whole clip as one segment, GPT-4o treated an *unobserved* QC step as a
+violation. The pipeline was corrected — time windowing → verifiability tiering → Phase 2 enrichment →
+unique-evidence guard (see WEEKLY_PROGRESS Addendum 3).
+
+Honest result on the clean `correct` clip (`run-20260612-9f9006e5`):
+
+| Verdict | Count |
+|---|---|
+| Compliant | 3 (each backed by a distinct ~25s window, audited as genuine) |
+| Deviation Detected | 0 |
+| Requires Inspection | 18 (fine-detail QC routed to a human) |
+| Unable to Verify | 8 |
+| **Adherence** | **100% of 3 video-verifiable steps; 0 fabricated** |
+
+**Evaluation caveat:** the `wrong_pin` and `chassis_error` clips are IndustReal *annotated
+visualization renders* with ground-truth labels (action captions, state vectors) burned into the
+frames — unusable for honest evaluation, since the model can read them. Quantitative accuracy on
+clean IndustReal ground truth (target >80%) remains pending.
 
 ### Evaluation method
 
@@ -90,7 +116,7 @@ Compliance verdict accuracy is measured as agreement rate between ProcedureGuard
 | Limitation | Impact | Mitigation |
 |---|---|---|
 | ~1 fps frame sampling | Sub-second actions and fast transitions may not be captured | Flag fast-action steps as Unable to Verify by default |
-| 512×512 px frame resolution | Fine motor precision, small part contact, tool tip detail are unreliable | Broaden field descriptions to general action categories; do not rely on pixel-level detail |
+| Low effective resolution (512 px Phase 1 / 768 px Phase 2) | Fine motor detail — torque, seating, pin orientation, "rotates freely" — is unresolvable | Steps needing such detail are tagged `fine_detail` and routed to **Requires Inspection**, not guessed |
 | Minimum segment length | Fields return null on very short clips (<~15 seconds) | Ensure minimum clip length of 30 seconds for reliable extraction |
 | Occlusion | Actions obscured from camera cannot be observed | Classify occluded steps as Unable to Verify |
 
@@ -105,6 +131,7 @@ Compliance verdict accuracy is measured as agreement rate between ProcedureGuard
 - ProcedureGuard is a research prototype. Verification reports require human review before informing any real quality decision.
 - Production deployment requires QMS integration and regulatory validation.
 - The system does not verify the authenticity or version control of the SOP document. An outdated SOP produces an outdated checklist.
+- Demo/eval video must be raw footage. Some IndustReal clips ship as annotated renders with ground-truth labels burned into the frames; the model would read those rather than observe the assembly (see KNOWN_ISSUES). Verify clips are clean before trusting results.
 
 ---
 

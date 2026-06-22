@@ -1,0 +1,658 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>ProcedureGuard</title>
+<!-- Fonts: uses locally-installed Inter / JetBrains Mono when present, else a clean
+     system stack. Production build self-hosts the two faces for exact fidelity. -->
+<style>
+/* ============================================================================
+   ProcedureGuard - instrument-grade compliance report
+   Design system: Uber black-and-white. No second accent; verdict differentiation
+   is carried by fill / border / weight / icon, never hue.
+   ========================================================================== */
+:root{
+  --ink:#000; --elevated:#282828;
+  --body:#5e5e5e; --faint:#8a8a8a; --mute:#afafaf;
+  --canvas:#fff; --soft:#efefef; --softer:#f6f6f6; --border:#e4e4e4; --pressed:#e2e2e2;
+  --on-dark:#fff;
+  --r-pill:999px; --r-card:16px; --r-input:8px; --r-sm:6px;
+  --s1:4px; --s2:8px; --s3:12px; --s4:16px; --s5:20px; --s6:24px; --s7:32px; --s8:48px;
+  --sans:'Inter',system-ui,'Helvetica Neue',Arial,sans-serif;
+  --mono:'JetBrains Mono',ui-monospace,'SF Mono',Menlo,monospace;
+  --ease:cubic-bezier(.22,1,.36,1);
+  --shadow-2:0 8px 30px rgba(0,0,0,.10);
+  --shadow-3:-12px 0 40px rgba(0,0,0,.12);
+  --z-drawer:60; --z-scrim:55; --z-toast:70; --z-bar:30;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  font-family:var(--sans);
+  font-feature-settings:'cv05','ss01','tnum';
+  color:var(--ink); background:var(--canvas);
+  -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;
+  font-size:14px; line-height:1.5;
+}
+.mono{font-family:var(--mono);font-feature-settings:'tnum';letter-spacing:-.01em}
+::selection{background:var(--ink);color:var(--on-dark)}
+:focus-visible{outline:2px solid var(--ink);outline-offset:2px;border-radius:3px}
+button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
+
+.app{height:100vh;display:flex;flex-direction:column;overflow:hidden}
+
+/* ---- Top bar -------------------------------------------------------------- */
+.bar{flex:0 0 auto;display:flex;align-items:center;gap:var(--s5);padding:0 var(--s7);
+  height:60px;border-bottom:1px solid var(--border);background:var(--canvas);z-index:var(--z-bar)}
+.brand{display:flex;align-items:center;gap:10px;flex:0 0 auto}
+.mark{width:26px;height:26px;border-radius:7px;background:var(--ink);display:grid;place-items:center;color:var(--on-dark);flex:0 0 auto}
+.mark svg{width:15px;height:15px}
+.brand .name{font-weight:700;font-size:15px;letter-spacing:-.02em}
+.brand .sub{color:var(--faint);font-size:12.5px;padding-left:11px;margin-left:1px;border-left:1px solid var(--border);font-weight:450}
+.bar .spacer{flex:1 1 auto}
+.meta{display:flex;align-items:center;gap:var(--s5);color:var(--body)}
+.meta .kv{display:flex;flex-direction:column;line-height:1.25}
+.meta .kv .k{font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--mute);font-weight:600}
+.meta .kv .v{font-size:12.5px}
+.runbadge{font-size:12px;color:var(--body);background:var(--soft);padding:6px 11px;border-radius:var(--r-pill)}
+.btn{font-weight:500;font-size:13px;padding:9px 16px;border-radius:var(--r-pill);transition:background .15s var(--ease),transform .08s var(--ease),box-shadow .15s var(--ease)}
+.btn-primary{background:var(--ink);color:var(--on-dark)}
+.btn-primary:hover{background:var(--elevated)}
+.btn-ghost{background:var(--canvas);color:var(--ink);box-shadow:inset 0 0 0 1.5px var(--border)}
+.btn-ghost:hover{box-shadow:inset 0 0 0 1.5px var(--ink)}
+.btn:active{transform:translateY(1px)}
+
+/* ---- Tabs ----------------------------------------------------------------- */
+.tabs{flex:0 0 auto;display:flex;gap:2px;padding:0 var(--s7);border-bottom:1px solid var(--border);background:var(--canvas);z-index:20}
+.tab{position:relative;padding:13px 14px 14px;font-size:13.5px;font-weight:500;color:var(--body);transition:color .15s var(--ease)}
+.tab:hover{color:var(--ink)}
+.tab[aria-selected="true"]{color:var(--ink)}
+.tab[aria-selected="true"]::after{content:"";position:absolute;left:14px;right:14px;bottom:-1px;height:2px;background:var(--ink)}
+.tab .ct{margin-left:6px;font-size:11px;color:var(--mute);font-family:var(--mono)}
+
+/* ---- Scroll region -------------------------------------------------------- */
+.scroll{flex:1 1 auto;overflow-y:auto;background:var(--canvas);scrollbar-width:thin;scrollbar-color:var(--pressed) transparent}
+.scroll::-webkit-scrollbar{width:10px;height:10px}
+.scroll::-webkit-scrollbar-thumb{background:var(--pressed);border-radius:6px;border:3px solid var(--canvas)}
+.wrap{max-width:1180px;margin:0 auto;padding:var(--s7) var(--s7) var(--s8)}
+.view{display:none}
+.view.active{display:block;animation:fade .18s var(--ease)}
+@keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+.h{font-size:13px;font-weight:600;color:var(--body);margin:0 0 var(--s4)}
+.h .n{font-family:var(--mono);color:var(--mute);font-weight:500;margin-left:8px;font-size:12px}
+
+/* ---- Verdict ledger ------------------------------------------------------- */
+.ledger{border:1px solid var(--border);border-radius:var(--r-card);overflow:hidden;margin-bottom:var(--s6)}
+.ledger .top{display:flex;gap:var(--s8);padding:var(--s6) var(--s7);align-items:flex-end;flex-wrap:wrap}
+.score .fig{font-size:46px;font-weight:700;letter-spacing:-.03em;line-height:.95;font-family:var(--mono)}
+.score .lab{margin-top:8px;font-size:12.5px;color:var(--body)}
+.score .den{font-size:12px;color:var(--faint);margin-top:2px}
+.ledger .top .grow{flex:1 1 260px;min-width:240px}
+.barline{display:flex;height:18px;border-radius:5px;overflow:hidden;background:var(--soft)}
+.seg{height:100%}
+.seg.compliant{background:var(--ink)}
+.seg.deviation{background:repeating-linear-gradient(45deg,var(--ink),var(--ink) 2px,#fff 2px,#fff 4px);box-shadow:inset 0 0 0 1px var(--ink)}
+.seg.inspection{background:repeating-linear-gradient(-45deg,#cfcfcf,#cfcfcf 1px,#e9e9e9 1px,#e9e9e9 6px)}
+.seg.unable{background:#dcdcdc}
+.legend{display:flex;gap:var(--s6);flex-wrap:wrap;margin-top:14px}
+.lg{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--body)}
+.sw{width:22px;height:11px;border-radius:3px;flex:0 0 auto}
+.sw.compliant{background:var(--ink)}
+.sw.deviation{background:repeating-linear-gradient(45deg,var(--ink),var(--ink) 2px,#fff 2px,#fff 4px);box-shadow:inset 0 0 0 1px var(--ink)}
+.sw.inspection{background:repeating-linear-gradient(-45deg,#cfcfcf,#cfcfcf 1px,#e9e9e9 1px,#e9e9e9 6px)}
+.sw.unable{background:#dcdcdc}
+.lg b{font-weight:600;font-family:var(--mono)}
+.ledger .foot{display:flex;border-top:1px solid var(--border);background:var(--softer)}
+.fact{flex:1;padding:13px var(--s6);border-right:1px solid var(--border)}
+.fact:last-child{border-right:none}
+.fact .k{font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--mute);font-weight:600}
+.fact .v{font-size:13px;margin-top:4px;color:var(--ink)}
+.fact .v.mono{font-size:12.5px}
+
+/* ---- Clip timeline -------------------------------------------------------- */
+.timeline{border:1px solid var(--border);border-radius:var(--r-card);padding:var(--s5) var(--s6) var(--s4);margin-bottom:var(--s6)}
+.timeline .tlh{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:14px}
+.timeline .tlh .t{font-size:13px;font-weight:600;color:var(--body)}
+.timeline .tlh .d{font-family:var(--mono);font-size:11.5px;color:var(--mute)}
+.tl-track{position:relative;height:40px;background:var(--softer);border-radius:var(--r-sm);overflow:hidden}
+.tl-win{position:absolute;top:0;bottom:0;border-right:1px solid var(--border)}
+.tl-ev{position:absolute;top:7px;bottom:7px;background:var(--ink);border-radius:3px;cursor:pointer;transition:transform .12s var(--ease)}
+.tl-ev:hover{transform:scaleY(1.12)}
+.tl-ev .lab{position:absolute;left:50%;top:-2px;transform:translate(-50%,-100%);font-family:var(--mono);font-size:10px;color:var(--ink);white-space:nowrap}
+.tl-axis{display:flex;justify-content:space-between;margin-top:7px;font-family:var(--mono);font-size:10.5px;color:var(--mute)}
+.tl-mini{position:relative;height:6px;background:var(--soft);border-radius:3px;margin-top:10px;overflow:hidden}
+.tl-mini .b{position:absolute;top:0;bottom:0;background:var(--ink);border-radius:3px}
+
+/* ---- Two-column overview -------------------------------------------------- */
+.cols{display:grid;grid-template-columns:1fr;gap:var(--s6)}
+@media(min-width:880px){.cols{grid-template-columns:1.3fr 1fr}}
+.ev{border:1px solid var(--border);border-radius:var(--r-card);padding:var(--s4) var(--s5);margin-bottom:var(--s3);transition:border-color .15s var(--ease);cursor:pointer}
+.ev:hover{border-color:var(--ink)}
+.ev .row1{display:flex;align-items:center;gap:var(--s3);margin-bottom:7px}
+.ev .id{font-family:var(--mono);font-size:12px;color:var(--faint)}
+.ev .ts{margin-left:auto;font-family:var(--mono);font-size:12px;color:var(--body)}
+.ev .crit{font-size:13.5px;font-weight:500;line-height:1.35}
+.ev .why{font-size:12.5px;color:var(--body);margin-top:6px;line-height:1.45}
+.note{border:1px solid var(--border);border-radius:var(--r-card);padding:var(--s6);background:var(--softer)}
+.note h4{font-size:13px;font-weight:600;margin-bottom:10px}
+.note p{font-size:12.8px;color:var(--body);line-height:1.55;margin-bottom:10px}
+.note p:last-child{margin-bottom:0}
+.note .big{font-family:var(--mono);font-weight:600;color:var(--ink)}
+
+/* ---- Verdict pill / tags / flags ------------------------------------------ */
+.v-pill{display:inline-flex;align-items:center;gap:6px;white-space:nowrap;font-size:11.5px;font-weight:500;padding:4px 11px;border-radius:var(--r-pill);line-height:1.4}
+.v-pill .ic{font-size:10px;line-height:1}
+.v-compliant{background:var(--ink);color:var(--on-dark)}
+.v-deviation{background:var(--canvas);color:var(--ink);box-shadow:inset 0 0 0 1.5px var(--ink);font-weight:600}
+.v-inspection{background:var(--canvas);color:var(--body);border:1.5px dashed var(--mute);padding:3px 10px}
+.v-unable{background:var(--soft);color:var(--faint)}
+.tag{font-family:var(--mono);font-size:10.5px;color:var(--faint);background:var(--soft);padding:2px 7px;border-radius:var(--r-pill);white-space:nowrap}
+.flag{display:inline-flex;align-items:center;gap:5px;font-size:11px;color:var(--ink);border:1px solid var(--ink);border-radius:var(--r-pill);padding:2px 9px;white-space:nowrap}
+
+/* ---- Toolbar -------------------------------------------------------------- */
+.toolbar{display:flex;align-items:center;gap:var(--s3);flex-wrap:wrap;margin-bottom:var(--s4)}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{font-size:12.5px;font-weight:500;color:var(--body);background:var(--soft);padding:7px 13px;border-radius:var(--r-pill);transition:all .14s var(--ease);display:flex;align-items:center;gap:7px}
+.chip:hover{background:var(--pressed)}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--on-dark)}
+.chip .c{font-family:var(--mono);font-size:11px;opacity:.7}
+.chip[aria-pressed="true"] .c{opacity:.85}
+.search{margin-left:auto;position:relative}
+.search input{font-family:var(--sans);font-size:13px;color:var(--ink);background:var(--soft);border:1.5px solid transparent;border-radius:var(--r-input);padding:9px 12px 9px 32px;width:200px;transition:border-color .14s var(--ease),width .18s var(--ease),background .14s var(--ease)}
+.search input:focus{outline:none;border-color:var(--ink);width:236px;background:var(--canvas)}
+.search input::placeholder{color:var(--faint)}
+.search svg{position:absolute;left:11px;top:50%;transform:translateY(-50%);width:14px;height:14px;color:var(--faint)}
+.search .kbd{position:absolute;right:9px;top:50%;transform:translateY(-50%);font-family:var(--mono);font-size:10px;color:var(--mute);border:1px solid var(--border);border-radius:4px;padding:1px 5px;pointer-events:none}
+.search input:focus + .kbd{display:none}
+
+/* ---- Table ---------------------------------------------------------------- */
+.tablewrap{border:1px solid var(--border);border-radius:var(--r-card);overflow:hidden}
+table{width:100%;border-collapse:collapse;font-size:13px}
+thead th{position:sticky;top:0;background:var(--canvas);text-align:left;font-size:11px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--faint);padding:11px var(--s5);border-bottom:1.5px solid var(--ink);z-index:5;white-space:nowrap;cursor:pointer;user-select:none}
+thead th.no-sort{cursor:default}
+thead th .ar{opacity:0;font-size:9px;margin-left:4px}
+thead th[data-dir] .ar{opacity:1}
+tbody tr{border-bottom:1px solid var(--border);transition:background .12s var(--ease);cursor:pointer;scroll-margin-top:48px}
+tbody tr:last-child{border-bottom:none}
+tbody tr:hover{background:var(--softer)}
+tbody tr.sel{background:var(--soft);box-shadow:inset 2px 0 0 var(--ink)}
+td{padding:13px var(--s5);vertical-align:top}
+td.c-id{font-family:var(--mono);font-size:12.5px;font-weight:500;color:var(--ink);white-space:nowrap}
+td.c-crit{max-width:420px}
+.crit-t{font-size:13px;line-height:1.4;color:var(--ink)}
+.crit-r{font-size:12px;line-height:1.45;color:var(--faint);margin-top:5px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+td.c-ev{white-space:nowrap;font-family:var(--mono);font-size:12px;color:var(--body)}
+td.c-ev .ns{color:var(--mute);font-family:var(--sans);font-style:normal}
+td.c-ev .t{display:block;color:var(--faint);font-size:11px;margin-top:2px}
+.conf{display:flex;align-items:center;gap:8px}
+.conf .track{width:46px;height:4px;background:var(--border);border-radius:2px;overflow:hidden}
+.conf .fill{height:100%;background:var(--ink)}
+.conf .pct{font-family:var(--mono);font-size:11.5px;color:var(--body);min-width:30px}
+.empty{padding:40px;text-align:center;color:var(--faint);font-size:13px}
+
+/* ---- Evidence groups ------------------------------------------------------ */
+.grouphead{display:flex;align-items:baseline;gap:10px;margin:var(--s6) 0 var(--s2)}
+.grouphead h3{font-size:14px;font-weight:600}
+.grouphead .ct{font-family:var(--mono);font-size:12px;color:var(--mute)}
+.gdesc{font-size:12px;color:var(--faint);margin:0 0 var(--s3);line-height:1.45;max-width:74ch}
+
+/* ---- Ask ------------------------------------------------------------------ */
+.ask{max-width:680px}
+.ask h2{font-size:20px;font-weight:700;letter-spacing:-.02em;margin-bottom:8px}
+.ask .lede{font-size:13.5px;color:var(--body);line-height:1.55;margin-bottom:var(--s5)}
+.ask .examples{display:grid;gap:8px;margin-bottom:var(--s5)}
+.q{text-align:left;border:1px solid var(--border);border-radius:var(--r-input);padding:12px 14px;font-size:13px;color:var(--ink);background:var(--canvas);transition:border-color .14s var(--ease),background .14s var(--ease)}
+.q:hover{border-color:var(--ink);background:var(--softer)}
+.q .a{color:var(--faint);font-size:12px;margin-top:5px;display:block}
+.askbar{display:flex;gap:8px;align-items:center;border:1.5px solid var(--border);border-radius:var(--r-pill);padding:6px 6px 6px 16px}
+.askbar input{flex:1;border:none;outline:none;font-family:var(--sans);font-size:13.5px;background:transparent;color:var(--ink)}
+.askbar input::placeholder{color:var(--faint)}
+.askbar .send{background:var(--ink);color:var(--on-dark);border-radius:var(--r-pill);padding:9px 16px;font-size:13px;font-weight:500}
+.hint{font-size:11.5px;color:var(--mute);margin-top:10px}
+
+/* ---- Detail drawer -------------------------------------------------------- */
+.scrim{position:fixed;inset:0;background:rgba(0,0,0,.28);opacity:0;visibility:hidden;transition:opacity .2s var(--ease),visibility .2s;z-index:var(--z-scrim)}
+.scrim.open{opacity:1;visibility:visible}
+.drawer{position:fixed;top:0;right:0;height:100vh;width:min(460px,92vw);background:var(--canvas);box-shadow:var(--shadow-3);transform:translateX(100%);transition:transform .26s var(--ease);z-index:var(--z-drawer);display:flex;flex-direction:column}
+.drawer.open{transform:none}
+.drawer-head{flex:0 0 auto;display:flex;align-items:center;gap:12px;padding:var(--s5) var(--s6);border-bottom:1px solid var(--border)}
+.drawer-head .id{font-family:var(--mono);font-size:13px;font-weight:500}
+.drawer-head .x{margin-left:auto;width:30px;height:30px;border-radius:var(--r-pill);display:grid;place-items:center;color:var(--body);transition:background .14s var(--ease)}
+.drawer-head .x:hover{background:var(--soft)}
+.drawer-body{flex:1 1 auto;overflow-y:auto;padding:var(--s6)}
+.dsec{margin-bottom:var(--s6)}
+.dsec:last-child{margin-bottom:0}
+.dsec .lbl{font-size:10px;letter-spacing:.07em;text-transform:uppercase;color:var(--mute);font-weight:600;margin-bottom:8px}
+.dsec .crit{font-size:15px;font-weight:500;line-height:1.4}
+.dsec .reason{font-size:13px;color:var(--body);line-height:1.55;background:var(--softer);border-radius:var(--r-input);padding:13px 15px}
+.dsec .conf2{display:flex;align-items:center;gap:10px}
+.dsec .conf2 .track{flex:1;height:5px;background:var(--border);border-radius:3px;overflow:hidden}
+.dsec .conf2 .fill{height:100%;background:var(--ink)}
+.dsec .conf2 .pct{font-family:var(--mono);font-size:13px}
+.kvrow{display:flex;gap:10px;font-size:13px;padding:7px 0;border-bottom:1px solid var(--border)}
+.kvrow:last-child{border-bottom:none}
+.kvrow .kk{color:var(--faint);width:120px;flex:0 0 auto}
+.kvrow .vv{color:var(--ink)}
+.kvrow .vv.mono{font-family:var(--mono);font-size:12.5px}
+
+/* ---- Toast ---------------------------------------------------------------- */
+.toast{position:fixed;left:50%;bottom:24px;transform:translate(-50%,16px);background:var(--ink);color:var(--on-dark);font-size:12.5px;padding:11px 18px;border-radius:var(--r-pill);box-shadow:var(--shadow-2);opacity:0;visibility:hidden;transition:opacity .2s var(--ease),transform .2s var(--ease),visibility .2s;z-index:var(--z-toast)}
+.toast.show{opacity:1;visibility:visible;transform:translate(-50%,0)}
+
+@media (prefers-reduced-motion:reduce){
+  *{animation:none!important;transition:none!important}
+  .seg{transition:none!important}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="bar">
+    <div class="brand">
+      <span class="mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M5 12.5l4.2 4.2L19 7" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+      <span class="name">ProcedureGuard</span>
+      <span class="sub">Compliance verification</span>
+    </div>
+    <span class="spacer"></span>
+    <div class="meta">
+      <div class="kv"><span class="k">SOP</span><span class="v" id="m-sop">-</span></div>
+      <div class="kv"><span class="k">Footage</span><span class="v mono" id="m-clip">-</span></div>
+      <span class="runbadge mono" id="m-run">-</span>
+    </div>
+    <button class="btn btn-ghost" id="export-btn">Export record</button>
+    <button class="btn btn-primary">Load run</button>
+  </header>
+
+  <nav class="tabs" role="tablist" id="tabs">
+    <button class="tab" role="tab" data-view="overview" aria-selected="true">Overview</button>
+    <button class="tab" role="tab" data-view="steps">Steps<span class="ct" id="t-steps">29</span></button>
+    <button class="tab" role="tab" data-view="evidence">Evidence<span class="ct" id="t-ev">3</span></button>
+    <button class="tab" role="tab" data-view="ask">Ask</button>
+  </nav>
+
+  <main class="scroll" id="scroll">
+    <div class="wrap">
+
+      <!-- OVERVIEW -->
+      <section class="view active" id="v-overview" role="tabpanel">
+        <div class="ledger">
+          <div class="top">
+            <div class="score">
+              <div class="fig" id="o-score">-</div>
+              <div class="lab">Adherence</div>
+              <div class="den" id="o-den"></div>
+            </div>
+            <div class="grow">
+              <div class="barline" id="o-bar" role="img" aria-label="Verdict distribution"></div>
+              <div class="legend" id="o-legend"></div>
+            </div>
+          </div>
+          <div class="foot" id="o-facts"></div>
+        </div>
+
+        <div class="timeline">
+          <div class="tlh"><span class="t">Evidence on the clip</span><span class="d" id="tl-dur"></span></div>
+          <div class="tl-track" id="tl-track"></div>
+          <div class="tl-axis" id="tl-axis"></div>
+        </div>
+
+        <div class="cols">
+          <div>
+            <p class="h">Confirmed on video<span class="n" id="o-confcount"></span></p>
+            <div id="o-confirmed"></div>
+          </div>
+          <div>
+            <div class="note">
+              <h4>How to read this run</h4>
+              <p>Every SOP step gets one of four verdicts. Adherence is scored only over steps the camera can adjudicate, so the denominator is <span class="big" id="o-n-verif">-</span>, not <span class="big">29</span>.</p>
+              <p><span class="big" id="o-n-insp">-</span> steps are fine-detail QC (torque, seating, pin length, small-part counts) that overhead 1 fps / 512 px footage cannot resolve. Routed to a human inspector by design, not failed.</p>
+              <p><span class="big" id="o-n-unable">-</span> steps could not be located in any window. No compliant evidence was claimed for them.</p>
+              <p>One video window backs at most one Compliant verdict, so a single observed action is never reused to pass several steps.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- STEPS -->
+      <section class="view" id="v-steps" role="tabpanel">
+        <div class="toolbar">
+          <div class="chips" id="s-chips"></div>
+          <div class="search">
+            <svg viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"/><path d="M20 20l-3.2-3.2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            <input id="s-search" type="text" placeholder="Search steps" aria-label="Search steps" />
+            <span class="kbd">/</span>
+          </div>
+        </div>
+        <div class="tablewrap">
+          <table id="s-table">
+            <thead><tr>
+              <th data-sort="seq">Step<span class="ar">▾</span></th>
+              <th data-sort="verdict">Verdict<span class="ar">▾</span></th>
+              <th data-sort="conf">Confidence<span class="ar">▾</span></th>
+              <th class="no-sort">Criterion &amp; reasoning</th>
+              <th class="no-sort">Video evidence</th>
+              <th data-sort="verif">Check<span class="ar">▾</span></th>
+            </tr></thead>
+            <tbody id="s-body"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- EVIDENCE -->
+      <section class="view" id="v-evidence" role="tabpanel">
+        <p class="h" id="e-summary"></p>
+        <div id="e-confirmed"></div>
+        <div id="e-groups"></div>
+      </section>
+
+      <!-- ASK -->
+      <section class="view" id="v-ask" role="tabpanel">
+        <div class="ask">
+          <h2>Ask about this run</h2>
+          <p class="lede">A question-and-answer layer grounded strictly in this run's verdicts and evidence. It reads the report, not the raw video, so every answer traces back to a step you can open.</p>
+          <div class="examples">
+            <button class="q">Which steps were confirmed on video, and where?<span class="a">Returns step-013, step-018, step-024 with their windows.</span></button>
+            <button class="q">Why was step-017 not marked compliant?<span class="a">Explains the unique-evidence guard on window seg-004.</span></button>
+            <button class="q">List every step routed to manual inspection.<span class="a">Returns the 18 fine-detail checks.</span></button>
+          </div>
+          <div class="askbar"><input type="text" placeholder="Ask a question about this verification run" aria-label="Ask a question" /><button class="send">Ask</button></div>
+          <p class="hint">Live answers run in the workstation build. This preview shows the surface.</p>
+        </div>
+      </section>
+
+    </div>
+  </main>
+</div>
+
+<!-- Detail drawer -->
+<div class="scrim" id="scrim"></div>
+<aside class="drawer" id="drawer" role="dialog" aria-modal="true" aria-label="Step detail">
+  <div class="drawer-head">
+    <span class="id" id="d-id"></span>
+    <span id="d-pill"></span>
+    <button class="x" id="d-close" aria-label="Close">
+      <svg viewBox="0 0 24 24" width="16" height="16" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+    </button>
+  </div>
+  <div class="drawer-body" id="d-body"></div>
+</aside>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const RI = "Fine-detail QC criterion (torque, seating, orientation, rotation, small-part count, or an inspection-only act) - not assessable from overhead 1 fps / 512 px video. Routed to manual inspection.";
+const DATA = {
+  run_id:"run-20260612-9f9006e5",
+  sop:"STEMFIE vehicle kit assembly manual",
+  clip:"industreal_03 - 275s - 11 windows",
+  windows:11, duration:275,
+  summary:{total:29, compliant:3, deviation:0, requires_inspection:18, unable_to_verify:8},
+  adherence:1.0,
+  verdicts:[
+    {seq:1, id:"step-001", verdict:"Requires Inspection", conf:1.0, verif:"fine_detail", crit:"Ensure the manual governs the procedures and verification against the 11-component state model defined in step 5.", reason:RI},
+    {seq:2, id:"step-002", verdict:"Requires Inspection", conf:1.0, verif:"fine_detail", crit:"Ensure all fastening is performed by hand without tools.", reason:RI},
+    {seq:3, id:"step-003", verdict:"Requires Inspection", conf:1.0, verif:"fine_detail", seqBad:true, crit:"Sort all parts by color and verify completeness against the parts list.", reason:RI},
+    {seq:4, id:"step-004", verdict:"Requires Inspection", conf:1.0, verif:"fine_detail", crit:"Verify the type and length of every fastener against the instruction before installation.", reason:RI},
+    {seq:5, id:"step-005", verdict:"Requires Inspection", conf:1.0, verif:"fine_detail", seqBad:true, crit:"Compare the build to the verification strip, component by component, at every checkpoint.", reason:RI},
+    {seq:6, id:"step-006", verdict:"Requires Inspection", conf:1.0, verif:"fine_detail", crit:"Ensure checkpoints pass before work continues and components are correctly installed and tightened.", reason:RI},
+    {seq:7, id:"step-007", verdict:"Unable to Verify", conf:0.7, verif:"presence", seqBad:true, crit:"Remove both hands from the assembly after completing each step to provide an unobstructed view.", reason:"None of the video windows explicitly show hands being removed from the assembly after completing a step."},
+    {seq:8, id:"step-008", verdict:"Requires Inspection", conf:1.0, verif:"fine_detail", crit:"Ensure replacement parts are fabricated with the specified parameters, including mandatory hole horizontal expansion.", reason:RI},
+    {seq:9, id:"step-009", verdict:"Requires Inspection", conf:1.0, verif:"fine_detail", crit:"Select the applicable procedure from the work order and verify incoming unit state for Procedure B.", reason:RI},
+    {seq:10, id:"step-010", verdict:"Requires Inspection", conf:1.0, verif:"fine_detail", crit:"Verify the parts required for this chapter, including pin type and length.", reason:RI},
+    {seq:11, id:"step-011", verdict:"Unable to Verify", conf:0.7, verif:"presence", seqBad:true, crit:"Place the base on a flat surface in the standard orientation.", reason:"None of the video windows explicitly show the base being placed on a flat surface in the standard orientation."},
+    {seq:12, id:"step-012", verdict:"Unable to Verify", conf:0.7, verif:"presence", crit:"Align the front chassis braces to the front interface of the base and fit the chassis onto the base.", reason:"None of the video windows clearly show the front chassis being mounted onto the base."},
+    {seq:13, id:"step-013", verdict:"Compliant", conf:0.9, verif:"presence", seg:"seg-004", t0:75, t1:100, crit:"Insert the pin through the aligned bores of the front chassis and push to a full seat.", reason:"Window seg-004 shows a gray pin being inserted into a hole on a white perforated beam, matching the observable action."},
+    {seq:14, id:"step-014", verdict:"Requires Inspection", conf:1.0, verif:"fine_detail", seqBad:true, crit:"Verify the front chassis subgoal is complete, including pin flushness, orientation, and seating.", reason:RI},
+    {seq:15, id:"step-015", verdict:"Requires Inspection", conf:1.0, verif:"fine_detail", crit:"Verify the parts required for this chapter, including brace type and pin type.", reason:RI},
+    {seq:16, id:"step-016", verdict:"Unable to Verify", conf:0.8, verif:"presence", crit:"Align both long braces to the rear interface of the base and fit until the bores align.", reason:"None of the video windows clearly show long braces being mounted onto the rear interface of the base."},
+    {seq:17, id:"step-017", verdict:"Unable to Verify", conf:0.4, verif:"presence", crit:"Insert the pin through the forward bore position of the rear chassis and push to a full seat.", reason:"Step step-013 already claimed window seg-004; the video lacks distinct evidence to confirm this step separately. Routed to manual verification."},
+    {seq:18, id:"step-018", verdict:"Compliant", conf:0.9, verif:"presence", seg:"seg-011", t0:250, t1:275, crit:"Insert the pin through the rearmost bore position of the rear chassis and push to a full seat.", reason:"Window seg-011 shows a gray pin being inserted into a hole on a white perforated beam near a pink connector and black wheels, matching the observable action."},
+    {seq:19, id:"step-019", verdict:"Requires Inspection", conf:1.0, verif:"fine_detail", crit:"Verify the rear chassis subgoal is complete, including pin seating, brace alignment, and absence of play.", reason:RI},
+    {seq:20, id:"step-020", verdict:"Requires Inspection", conf:1.0, verif:"fine_detail", seqBad:true, crit:"Verify the parts required for this chapter, including screw identification.", reason:RI},
+    {seq:21, id:"step-021", verdict:"Unable to Verify", conf:0.7, verif:"presence", crit:"Align the front bracket to the front chassis interface and hold the alignment.", reason:"None of the video windows clearly show the front bracket being mounted onto the front chassis interface."},
+    {seq:22, id:"step-022", verdict:"Unable to Verify", conf:0.8, verif:"presence", crit:"Install the verified screw by hand and tighten to firm finger torque.", reason:"None of the video windows explicitly show a screw being installed onto a front bracket."},
+    {seq:23, id:"step-023", verdict:"Requires Inspection", conf:1.0, verif:"fine_detail", seqBad:true, crit:"Verify the parts required for this chapter, including washer count.", reason:RI},
+    {seq:24, id:"step-024", verdict:"Compliant", conf:0.95, verif:"presence", seg:"seg-006", t0:125, t1:150, crit:"Assemble the stack in order: wheel, washer, acorn nut, and install each acorn nut by hand.", reason:"Window seg-006 clearly shows a black wheel being mounted onto a gray axle that passes through aligned holes in two white perforated beams."},
+    {seq:25, id:"step-025", verdict:"Unable to Verify", conf:0.4, verif:"presence", crit:"Install the pulley on the rear axle first, then assemble the stack in order: wheel, washer, acorn nut.", reason:"Step step-024 already claimed window seg-006; the video lacks distinct evidence to confirm this step separately. Routed to manual verification."},
+    {seq:26, id:"step-026", verdict:"Requires Inspection", conf:1.0, verif:"fine_detail", seqBad:true, crit:"Verify washer presence behind every wheel, acorn nut tightness, and rear pulley presence.", reason:RI},
+    {seq:27, id:"step-027", verdict:"Requires Inspection", conf:1.0, verif:"fine_detail", seqBad:true, crit:"Verify the complete vehicle against the state strip, ensuring state 13 - complete assembly.", reason:RI},
+    {seq:28, id:"step-028", verdict:"Requires Inspection", conf:1.0, verif:"fine_detail", crit:"Audit fasteners and hardware, including pin type, orientation, acorn nut tightness, washer presence, and rear pulley presence.", reason:RI},
+    {seq:29, id:"step-029", verdict:"Requires Inspection", conf:1.0, verif:"fine_detail", seqBad:true, crit:"Record the build and release the vehicle on PASS or quarantine on FAIL.", reason:RI}
+  ]
+};
+
+const V = {
+  "Compliant":{cls:"compliant",ic:"✓",short:"Compliant"},
+  "Deviation Detected":{cls:"deviation",ic:"✗",short:"Deviation"},
+  "Requires Inspection":{cls:"inspection",ic:"○",short:"Requires Inspection"},
+  "Unable to Verify":{cls:"unable",ic:"—",short:"Unable to Verify"}
+};
+const byId = Object.fromEntries(DATA.verdicts.map(v=>[v.id,v]));
+const esc = s => String(s).replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));
+const pill = v => `<span class="v-pill v-${V[v].cls}"><span class="ic">${V[v].ic}</span>${V[v].short}</span>`;
+const fmt = s => `${Math.floor(s/60)}:${String(Math.round(s)%60).padStart(2,'0')}`;
+const reduce = matchMedia('(prefers-reduced-motion:reduce)').matches;
+
+/* ---- OVERVIEW ------------------------------------------------------------- */
+function renderOverview(){
+  const s=DATA.summary, total=s.total, verif=s.compliant+s.deviation;
+  document.getElementById("o-score").textContent = Math.round(DATA.adherence*100)+"%";
+  document.getElementById("o-den").textContent = `${s.compliant} of ${verif} video-verifiable steps`;
+  document.getElementById("o-n-verif").textContent = verif;
+  document.getElementById("o-n-insp").textContent = s.requires_inspection;
+  document.getElementById("o-n-unable").textContent = s.unable_to_verify;
+
+  const order=[["compliant","Compliant",s.compliant],["deviation","Deviation",s.deviation],
+               ["inspection","Requires inspection",s.requires_inspection],["unable","Unable to verify",s.unable_to_verify]];
+  const bar=document.getElementById("o-bar");
+  // widths are the visible default; the .barline scaleX keyframe only enhances the entrance
+  bar.innerHTML = order.filter(o=>o[2]>0).map(o=>`<div class="seg ${o[0]}" style="width:${o[2]/total*100}%" title="${o[1]}: ${o[2]}"></div>`).join("");
+  document.getElementById("o-legend").innerHTML = order.map(o=>`<span class="lg"><span class="sw ${o[0]}"></span>${o[1]} <b>${o[2]}</b></span>`).join("");
+  document.getElementById("o-facts").innerHTML = [
+    ["Steps",total,false],["Video windows",DATA.windows,false],
+    ["Matched to video",s.compliant+" of "+total,false],["Run",DATA.run_id,true]
+  ].map(f=>`<div class="fact"><div class="k">${f[0]}</div><div class="v ${f[2]?'mono':''}">${f[1]}</div></div>`).join("");
+
+  renderTimeline();
+
+  const conf=DATA.verdicts.filter(v=>v.verdict==="Compliant");
+  document.getElementById("o-confcount").textContent=conf.length;
+  document.getElementById("o-confirmed").innerHTML=conf.map(v=>`
+    <div class="ev" data-id="${v.id}" tabindex="0">
+      <div class="row1"><span class="id">${v.id}</span>${pill(v.verdict)}<span class="ts">${v.seg} &middot; ${v.t0}s-${v.t1}s</span></div>
+      <div class="crit">${esc(v.crit)}</div>
+      <div class="why">${esc(v.reason)}</div>
+    </div>`).join("");
+}
+
+function renderTimeline(){
+  const dur=DATA.duration, win=DATA.windows, wlen=dur/win;
+  document.getElementById("tl-dur").textContent=`${win} windows &middot; ${fmt(dur)}`.replace('&middot;','·');
+  const track=document.getElementById("tl-track");
+  let html="";
+  for(let i=1;i<win;i++){ html+=`<div class="tl-win" style="left:${i*wlen/dur*100}%"></div>`; }
+  DATA.verdicts.filter(v=>v.verdict==="Compliant").forEach(v=>{
+    const left=v.t0/dur*100, w=(v.t1-v.t0)/dur*100;
+    html+=`<div class="tl-ev" data-id="${v.id}" style="left:${left}%;width:${w}%" title="${v.id} · ${v.seg}"><span class="lab">${v.id.replace('step-','')}</span></div>`;
+  });
+  track.innerHTML=html;
+  document.getElementById("tl-axis").innerHTML=[0,Math.round(dur/3),Math.round(2*dur/3),dur].map(t=>`<span>${fmt(t)}</span>`).join("");
+}
+
+/* ---- STEPS ---------------------------------------------------------------- */
+let filter="all", query="", sortKey="seq", sortDir=1, sel=-1;
+const FILTERS=[
+  ["all","All steps",()=>true],
+  ["Compliant","Compliant",v=>v.verdict==="Compliant"],
+  ["Deviation Detected","Deviations",v=>v.verdict==="Deviation Detected"],
+  ["Requires Inspection","Inspection",v=>v.verdict==="Requires Inspection"],
+  ["Unable to Verify","Unable",v=>v.verdict==="Unable to Verify"],
+  ["evidence","With evidence",v=>!!v.seg]
+];
+const VRANK={"Compliant":0,"Deviation Detected":1,"Requires Inspection":2,"Unable to Verify":3};
+function renderChips(){
+  document.getElementById("s-chips").innerHTML=FILTERS.map(f=>{
+    const n=DATA.verdicts.filter(f[2]).length;
+    return `<button class="chip" data-f="${f[0]}" aria-pressed="${filter===f[0]}">${f[1]}<span class="c">${n}</span></button>`;
+  }).join("");
+}
+function rows(){
+  const f=FILTERS.find(x=>x[0]===filter)[2];
+  let r=DATA.verdicts.filter(f);
+  if(query){const q=query.toLowerCase();r=r.filter(v=>(v.id+" "+v.crit+" "+v.reason+" "+v.verdict).toLowerCase().includes(q));}
+  return r.slice().sort((a,b)=>{
+    let av,bv;
+    if(sortKey==="verdict"){av=VRANK[a.verdict];bv=VRANK[b.verdict];}
+    else if(sortKey==="conf"){av=a.conf;bv=b.conf;}
+    else if(sortKey==="verif"){av=a.verif;bv=b.verif;}
+    else{av=a.seq;bv=b.seq;}
+    return (av>bv?1:av<bv?-1:0)*sortDir;
+  });
+}
+let curRows=[];
+function renderSteps(){
+  curRows=rows(); sel=-1;
+  const body=document.getElementById("s-body");
+  if(!curRows.length){body.innerHTML=`<tr><td colspan="6" class="empty">No steps match this filter.</td></tr>`;return;}
+  body.innerHTML=curRows.map(v=>{
+    const ev=v.seg?`${v.seg}<span class="t">${v.t0}s - ${v.t1}s</span>`:`<span class="ns">No match</span>`;
+    const flag=v.seqBad?`<div style="margin-top:6px"><span class="flag" title="Observed out of declared order">&#8597; Out of order</span></div>`:"";
+    const tag=`<span class="tag">${v.verif==="fine_detail"?"fine detail":v.verif}</span>`;
+    return `<tr data-id="${v.id}">
+      <td class="c-id">${v.id}</td>
+      <td>${pill(v.verdict)}</td>
+      <td><div class="conf"><div class="track"><div class="fill" style="width:${Math.round(v.conf*100)}%"></div></div><span class="pct">${Math.round(v.conf*100)}%</span></div></td>
+      <td class="c-crit"><div class="crit-t">${esc(v.crit)}</div><div class="crit-r">${esc(v.reason)}</div></td>
+      <td class="c-ev">${ev}${flag}</td>
+      <td>${tag}</td>
+    </tr>`;
+  }).join("");
+}
+function setSel(i){
+  const trs=document.querySelectorAll("#s-body tr[data-id]");
+  if(!trs.length)return;
+  sel=Math.max(0,Math.min(trs.length-1,i));
+  trs.forEach((t,k)=>t.classList.toggle("sel",k===sel));
+  trs[sel].scrollIntoView({block:"nearest"});
+}
+function bindSteps(){
+  renderChips();
+  document.getElementById("s-chips").addEventListener("click",e=>{const b=e.target.closest(".chip");if(!b)return;filter=b.dataset.f;renderChips();renderSteps();});
+  document.getElementById("s-search").addEventListener("input",e=>{query=e.target.value;renderSteps();});
+  document.querySelectorAll("#s-table thead th[data-sort]").forEach(th=>{
+    th.addEventListener("click",()=>{
+      const k=th.dataset.sort;
+      if(sortKey===k)sortDir*=-1;else{sortKey=k;sortDir=1;}
+      document.querySelectorAll("#s-table thead th").forEach(x=>x.removeAttribute("data-dir"));
+      th.setAttribute("data-dir",sortDir>0?"asc":"desc");
+      th.querySelector(".ar").textContent=sortDir>0?"▴":"▾";
+      renderSteps();
+    });
+  });
+  document.getElementById("s-body").addEventListener("click",e=>{const tr=e.target.closest("tr[data-id]");if(tr)openDrawer(tr.dataset.id);});
+  renderSteps();
+}
+
+/* ---- EVIDENCE ------------------------------------------------------------- */
+function miniBar(v){const dur=DATA.duration;return `<div class="tl-mini" title="${v.seg}"><div class="b" style="left:${v.t0/dur*100}%;width:${(v.t1-v.t0)/dur*100}%"></div></div>`;}
+function renderEvidence(){
+  const s=DATA.summary;
+  const insp=DATA.verdicts.filter(v=>v.verdict==="Requires Inspection");
+  const unob=DATA.verdicts.filter(v=>v.verdict==="Unable to Verify");
+  document.getElementById("e-summary").innerHTML=`${s.compliant} with video evidence <span class="n">&middot;</span> ${insp.length} routed to inspection <span class="n">&middot;</span> ${unob.length} not observed in video`;
+  const conf=DATA.verdicts.filter(v=>v.verdict==="Compliant");
+  document.getElementById("e-confirmed").innerHTML=conf.map(v=>`
+    <div class="ev" data-id="${v.id}" tabindex="0">
+      <div class="row1"><span class="id">${v.id}</span>${pill(v.verdict)}<span class="ts">${v.seg} &middot; ${v.t0}s-${v.t1}s &middot; ${Math.round(v.conf*100)}%</span></div>
+      <div class="crit">${esc(v.crit)}</div>
+      <div class="why">${esc(v.reason)}</div>${miniBar(v)}
+    </div>`).join("");
+  const grp=(title,desc,items)=>`
+    <div class="grouphead"><h3>${title}</h3><span class="ct">${items.length} step${items.length!==1?'s':''}</span></div>
+    <p class="gdesc">${desc}</p>
+    <div class="tablewrap"><table><tbody>${items.map(v=>`
+      <tr data-id="${v.id}"><td class="c-id" style="width:96px">${v.id}</td><td style="width:200px">${pill(v.verdict)}</td><td class="crit-t">${esc(v.crit)}</td></tr>`).join("")}</tbody></table></div>`;
+  document.getElementById("e-groups").innerHTML=
+    grp("Routed to manual inspection","Fine-detail QC (torque, seating, orientation, small-part counts) that overhead 1 fps / 512 px video cannot resolve. Deferred to a human inspector by design.",insp)+
+    grp("Not observed in video","The described action could not be clearly located in any video window. No compliant evidence was claimed for these steps.",unob);
+}
+
+/* ---- DRAWER --------------------------------------------------------------- */
+let lastFocus=null;
+function openDrawer(id){
+  const v=byId[id]; if(!v)return;
+  lastFocus=document.activeElement;
+  document.getElementById("d-id").textContent=v.id;
+  document.getElementById("d-pill").innerHTML=pill(v.verdict);
+  const verifText = v.verif==="fine_detail"
+    ? "Fine-detail QC the camera cannot resolve at 1 fps / 512 px. Routed to a human inspector without a model call."
+    : "Gross physical action the overhead camera can confirm. Reasoned on the observable action only.";
+  const evBlock = v.seg
+    ? `<div class="kvrow"><span class="kk">Window</span><span class="vv mono">${v.seg}</span></div>
+       <div class="kvrow"><span class="kk">Timestamp</span><span class="vv mono">${v.t0}s - ${v.t1}s &middot; ${fmt(v.t0)}-${fmt(v.t1)}</span></div>
+       ${miniBar(v)}`
+    : `<div class="kvrow"><span class="kk">Window</span><span class="vv">No matching window</span></div>`;
+  document.getElementById("d-body").innerHTML=`
+    <div class="dsec"><div class="lbl">Criterion</div><div class="crit">${esc(v.crit)}</div></div>
+    <div class="dsec"><div class="lbl">Confidence</div><div class="conf2"><div class="track"><div class="fill" style="width:${Math.round(v.conf*100)}%"></div></div><span class="pct">${Math.round(v.conf*100)}%</span></div></div>
+    <div class="dsec"><div class="lbl">Model reasoning</div><div class="reason">${esc(v.reason)}</div></div>
+    <div class="dsec"><div class="lbl">Verifiability</div>
+      <div class="kvrow"><span class="kk">Tier</span><span class="vv mono">${v.verif==="fine_detail"?"fine detail":v.verif}</span></div>
+      <p style="font-size:12.5px;color:var(--body);line-height:1.5;margin-top:8px">${verifText}</p></div>
+    <div class="dsec"><div class="lbl">Evidence</div>${evBlock}</div>
+    <div class="dsec"><div class="lbl">Sequence</div><div class="kvrow"><span class="kk">Declared order</span><span class="vv">${v.seqBad?"Observed out of declared order":"Consistent"}</span></div></div>`;
+  document.getElementById("drawer").classList.add("open");
+  document.getElementById("scrim").classList.add("open");
+  document.getElementById("d-close").focus();
+}
+function closeDrawer(){
+  document.getElementById("drawer").classList.remove("open");
+  document.getElementById("scrim").classList.remove("open");
+  if(lastFocus&&lastFocus.focus)lastFocus.focus();
+}
+
+/* ---- toast ---------------------------------------------------------------- */
+let toastT;
+function toast(msg){const t=document.getElementById("toast");t.textContent=msg;t.classList.add("show");clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove("show"),2600);}
+
+/* ---- tabs ----------------------------------------------------------------- */
+function showView(name){
+  document.querySelectorAll(".tab").forEach(t=>t.setAttribute("aria-selected",t.dataset.view===name));
+  document.querySelectorAll(".view").forEach(v=>v.classList.toggle("active",v.id==="v-"+name));
+  document.getElementById("scroll").scrollTop=0;
+}
+function currentView(){return (document.querySelector(".tab[aria-selected='true']")||{}).dataset.view;}
+
+/* ---- events --------------------------------------------------------------- */
+document.getElementById("tabs").addEventListener("click",e=>{const t=e.target.closest(".tab");if(t)showView(t.dataset.view);});
+document.getElementById("scrim").addEventListener("click",closeDrawer);
+document.getElementById("d-close").addEventListener("click",closeDrawer);
+document.getElementById("export-btn").addEventListener("click",()=>toast("Verification record export runs in the workstation build."));
+// evidence/overview cards open drawer
+document.body.addEventListener("click",e=>{const card=e.target.closest(".ev[data-id]");if(card)openDrawer(card.dataset.id);
+  const trg=e.target.closest("#e-groups tr[data-id]");if(trg)openDrawer(trg.dataset.id);
+  const tlev=e.target.closest(".tl-ev[data-id]");if(tlev)openDrawer(tlev.dataset.id);});
+// keyboard
+document.addEventListener("keydown",e=>{
+  if(e.key==="Escape"){closeDrawer();return;}
+  const typing=/^(input|textarea)$/i.test((e.target.tagName||""));
+  if(e.key==="/"&&!typing){e.preventDefault();showView("steps");const s=document.getElementById("s-search");s.focus();s.select?s.select():0;return;}
+  if(typing)return;
+  if(currentView()==="steps"){
+    if(e.key==="j"||e.key==="ArrowDown"){e.preventDefault();setSel(sel+1);}
+    else if(e.key==="k"||e.key==="ArrowUp"){e.preventDefault();setSel(sel<0?0:sel-1);}
+    else if(e.key==="Enter"&&sel>=0&&curRows[sel]){openDrawer(curRows[sel].id);}
+  }
+});
+
+/* ---- boot ----------------------------------------------------------------- */
+document.getElementById("m-sop").textContent=DATA.sop;
+document.getElementById("m-clip").textContent=DATA.clip;
+document.getElementById("m-run").textContent=DATA.run_id;
+document.getElementById("t-steps").textContent=DATA.summary.total;
+document.getElementById("t-ev").textContent=DATA.summary.compliant;
+renderOverview(); bindSteps(); renderEvidence();
+</script>
+</body>
+</html>

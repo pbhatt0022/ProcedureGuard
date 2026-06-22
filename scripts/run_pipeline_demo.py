@@ -28,9 +28,12 @@ if hasattr(sys.stdout, "reconfigure"):
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 
+# NOTE: the repo's video is stored in Git LFS — raw.githubusercontent.com serves
+# only the LFS pointer text, which Content Understanding rejects with
+# ContentSourceNotAccessible. media.githubusercontent.com serves the real binary.
 SAMPLE_VIDEO_URL = (
-    "https://raw.githubusercontent.com/Azure-Samples"
-    "/azure-ai-content-understanding-python/main/data/sample_video.mp4"
+    "https://media.githubusercontent.com/media/Azure-Samples"
+    "/azure-ai-content-understanding-python/main/data/FlightSimulator.mp4"
 )
 DEFAULT_SOP = str(Path(__file__).parent.parent / "tests/fixtures/prusa_mk3s_plus_assembly.pdf")
 

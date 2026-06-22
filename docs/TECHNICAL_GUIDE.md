@@ -41,6 +41,7 @@ Always check the live docs before answering — do not rely on training data for
 - **Blob Storage URL reference** for all video >200 MB or >30 minutes. Never binary upload for production use.
 - **No A2A (Agent-to-Agent) protocol.** Pipeline is linear and Azure-native — A2A adds no value here.
 - **MCP only for Agent 3** (Q&A Chat). Not for Agent 1 or Agent 2.
+- **Entra ID auth only — never API keys.** All `*_KEY` fields in `.env` stay blank; everything authenticates via `DefaultAzureCredential` (az login). The Foundry hub's 84-char portal keys do not work with the Cognitive Services SDKs — do not suggest copying keys from the portal. The OpenAI client needs `get_bearer_token_provider(DefaultAzureCredential(), "https://cognitiveservices.azure.com/.default")`. See ARCHITECTURE.md "Authentication" and KNOWN_ISSUES.md before touching auth code.
 
 ---
 

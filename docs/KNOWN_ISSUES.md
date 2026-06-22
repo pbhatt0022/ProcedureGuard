@@ -23,6 +23,33 @@
 
 ---
 
+## Phase 2 vocabulary can't distinguish the rear pulley from other pink connectors
+**Symptom:** Absence inference for check-025 ("install pulley on rear axle first") with `key_objects=["pulley"]` correctly flags the missing-pulley clip (22_assy_2_3) but ALSO false-positives on the clean baseline (23_assy_0_1). Both clips end at identical adherence scores.
+**Root cause:** GPT-4o Vision Phase 2 describes the STEMFIE pulley as "pink connector" / "pink axle connector" in BOTH correct and incorrect clips — at overhead resolution the flat pink pulley is visually indistinguishable from the other pink connectors in the kit. So the token "pulley" appears in no window for either clip, and `apply_absence_inference` cannot tell "pulley genuinely absent" from "pulley present but described generically."
+**Fix / workaround:** `key_objects` cleared to `[]` on check-025 for now (disables the detection rather than emit a false alarm on good work — see DECISIONS_AND_RATIONALE.md). Real fix (Week 3): checklist-aware Phase 2 that asks a targeted question per discriminating part ("is a flat pink disk/pulley seated on the rear axle before the wheel?") instead of a generic description, gated by `scripts/eval_harness.py` showing recall up without precision down.
+**Affected component:** Layer 2 — Phase 2 GPT-4o Vision (`video_analyzer.py`); Layer 3 — `apply_absence_inference` (`compliance_engine.py`)
+**Date found:** Week 4 (June 18)
+
+---
+
+## Front vs rear axle are indistinguishable from overhead → wheel-step false negatives
+**Symptom:** Eval harness shows 3 false negatives, all on check-024 (front wheel) / check-025 (rear wheel): clips with a missing wheel (23_assy_1_2, 16_main_3_3) get "Compliant" because a wheel IS seen elsewhere in the clip.
+**Root cause:** Overhead video can't reliably tell which axle (front vs rear) a wheel is being mounted on; `reason_step` sees *a* wheel-mount window and matches it to the step. The positional discriminator ("front"/"rear") is not visually resolvable.
+**Fix / workaround:** Honest current behaviour — `enforce_unique_evidence` prevents one window backing both steps, so at most one wheel step goes green. Full resolution needs positional reasoning (which end of the frame / order relative to other parts) — Week 3 sequence-aware matching. Tracked quantitatively in `scripts/eval_harness.py` (Recall 25%, Precision 100% as of June 18).
+**Affected component:** Layer 3 — `reason_step` (`compliance_engine.py`)
+**Date found:** Week 4 (June 18)
+
+---
+
+## Content Understanding removed from the codebase (June 18) — CU entries below are historical
+**Symptom:** N/A — informational. The CU-related entries that follow describe a component no longer in the pipeline.
+**Root cause:** CU contributed no usable output for single-take assembly footage (0-segment custom fields; one segment from prebuilt-video; inaccessible keyframe URLs). See DECISIONS_AND_RATIONALE.md "Remove Azure AI Content Understanding entirely".
+**Fix / workaround:** Duration via OpenCV `probe_video_duration()`; segments via `build_time_windowed_segments()`; fields via GPT-4o Vision. The CU entries below are retained for history and for anyone evaluating CU on different footage.
+**Affected component:** Layer 2 — video pipeline
+**Date found:** Week 4 (June 18)
+
+---
+
 ## Content Understanding: fields return null on very short clips
 **Symptom:** Custom `fieldSchema` fields all return null or empty when video clip is very short
 **Root cause:** Generative field extraction requires enough visual context per segment — very short clips (under ~15 seconds) may not provide enough frames
@@ -96,15 +123,16 @@
 **Fix / workaround:** Upload all test videos to Azure Blob Storage first and pass a SAS URL instead. Do not use GitHub URLs for Content Understanding inputs.
 **Affected component:** Layer 2 — `video_analyzer.py`; `scripts/test_video_pipeline.py` default URL
 **Date found:** Week 1 (smoke test run)
+**Update (Week 2, June 12):** Not universally true — `media.githubusercontent.com` (the Git LFS media host) worked fine on the June 12 E2E run. The Week 1 failures may have been the LFS-pointer problem below rather than IP blocking. Blob SAS URLs remain the reliable path for real demo videos.
 
 ---
 
-## AIServices resource: no custom subdomain, token auth unavailable
+## ~~AIServices resource: no custom subdomain, token auth unavailable~~ — RESOLVED Week 2
 **Symptom:** `DefaultAzureCredential` fails with HTTP 400 `BadRequest: Please provide a custom subdomain for token authentication`. DNS resolution fails for both `<name>.cognitiveservices.azure.com` and `<name>.services.ai.azure.com`.
-**Root cause:** The `procedureguard-ai` resource was created without a custom subdomain (`customSubDomainName: null`). The only available endpoint is the regional one (`https://eastus.api.cognitive.microsoft.com/`), which only accepts API key auth.
-**Fix / workaround:** Use `AzureKeyCredential` with the regional endpoint for local development. `get_client()` in `video_analyzer.py` automatically uses the key from `AZURE_CONTENT_UNDERSTANDING_KEY` when set. Long-term fix: recreate the resource with `--custom-domain` flag to enable token auth.
-**Affected component:** Layer 2 — `video_analyzer.py`, `.env`
-**Date found:** Week 1 (smoke test run)
+**Root cause:** The `procedureguard-ai` resource was created without a custom subdomain (`customSubDomainName: null`). The only available endpoint was the regional one (`https://eastus.api.cognitive.microsoft.com/`), which only accepts API key auth.
+**Fix / workaround:** **RESOLVED (Week 2, June 12):** Generated custom subdomain via the portal's "Generate Custom Domain Name" button. The default name `procedureguard-ai` was already taken globally (DNS-nonexistent but reserved by another tenant) — generated **`pg-ai-priya`** instead. Endpoint is now `https://pg-ai-priya.services.ai.azure.com` and `DefaultAzureCredential` token auth works for both Document Intelligence and Content Understanding. Requires "Cognitive Services User" RBAC role (see Foundry-keys entry below).
+**Affected component:** Layer 2 — `video_analyzer.py`, `sop_extractor.py`, `.env`
+**Date found:** Week 1 (smoke test run) · **Resolved:** Week 2 (June 12)
 **Source:** `az cognitiveservices account show --query properties.customSubDomainName`
 
 ---
@@ -153,6 +181,103 @@ aria2c.exe `
 **Fix / workaround:** Accepted for v1 — Agent 1 (checklist generator, GPT-4o) filters non-procedural text when building the compliance checklist. If it becomes a problem, add noise patterns to the skip logic or restrict page ranges to assembly chapters.
 **Affected component:** Layer 2 — `sop_extractor.py`; Layer 3 — Agent 1 prompt
 **Date found:** Week 1 (SOP smoke test)
+
+---
+
+## Foundry hub "Keys and Endpoint" keys are NOT Cognitive Services keys (401 everywhere)
+**Symptom:** HTTP 401 `PermissionDenied` from Document Intelligence, and 401 from Azure OpenAI, when using the keys shown on the `procedureguard-ai` portal "Keys and Endpoint" page. The keys are 84 characters long (standard Cognitive Services keys are 32).
+**Root cause:** `procedureguard-ai` is an AI Foundry hub (Kind: AIServices). Its portal keys are **Foundry API keys** — they work with the Foundry/OpenAI-style `api-key` header on Foundry endpoints, but are rejected by the Document Intelligence SDK (`Ocp-Apim-Subscription-Key`) and by the separate `procedureguard-openai` resource.
+**Fix / workaround:** Don't use the 84-char keys at all. Authenticate with Microsoft Entra ID (`DefaultAzureCredential` via `az login`):
+  1. Custom subdomain required for token auth → `https://pg-ai-priya.services.ai.azure.com`
+  2. RBAC roles: "Cognitive Services User" on `procedureguard-ai`; "Cognitive Services OpenAI User" on `procedureguard-openai`
+  3. Personal Outlook accounts aren't resolvable by email in AAD graph — use `--assignee-object-id $(az ad signed-in-user show --query id -o tsv)` with `--assignee-principal-type User`
+  4. Leave all `*_KEY` fields blank in `.env`; clients fall back to `DefaultAzureCredential` automatically
+**Affected component:** All Azure auth — `config.py`, `sop_extractor.py`, `video_analyzer.py`, `checklist_generator.py`, `compliance_engine.py`
+**Date found:** Week 2 (June 12) — cost roughly a full session of debugging; do not re-litigate
+
+---
+
+## AzureOpenAI SDK: empty-string AZURE_OPENAI_API_KEY breaks token auth ("Missing credentials")
+**Symptom:** `AzureOpenAI(azure_ad_token_provider=...)` raises `OpenAIError: Missing credentials. Please pass an api_key...` even though a valid token provider is passed. Works in an isolated shell, fails in the pipeline.
+**Root cause:** `.env` contained `AZURE_OPENAI_API_KEY=` (blank). `load_dotenv()` puts the **empty string** into `os.environ`. `AzureOpenAI.__init__` reads that env var itself when `api_key` isn't passed — the empty string is "present but falsy", so it bypasses the token-provider sentinel path and the parent `OpenAI.__init__` rejects the falsy key. (Verified against openai 2.41.0 source.)
+**Fix / workaround:** `config.py` pops blank `AZURE_OPENAI_API_KEY` and `AZURE_OPENAI_AD_TOKEN` from `os.environ` after `load_dotenv()` (same treatment as the blank service-principal vars for `EnvironmentCredential`). Rule of thumb: **a blank env var is not the same as an absent one** — SDKs that read `os.environ` directly will trip on empty strings.
+**Affected component:** `config.py`; all three `get_openai_client()` call sites
+**Date found:** Week 2 (June 12)
+
+---
+
+## Azure-Samples sample video moved to Git LFS — raw URL serves a text pointer
+**Symptom:** Pipeline default video URL fails: first 404 (file renamed), then after fixing the name, Content Understanding returns `ContentSourceNotAccessible`.
+**Root cause:** The repo replaced `data/sample_video.mp4` with `data/FlightSimulator.mp4` stored in **Git LFS**. `raw.githubusercontent.com` serves the 133-byte LFS pointer file (`text/plain`), not the video. Content Understanding downloads the pointer text and rejects it.
+**Fix / workaround:** Use the LFS media host: `https://media.githubusercontent.com/media/Azure-Samples/azure-ai-content-understanding-python/main/data/FlightSimulator.mp4` (serves the real 38.6 MB binary). Updated as the default in `scripts/run_pipeline_demo.py`. Diagnostic tip: `curl -sI <url>` — `Content-Length: 133` + `text/plain` = LFS pointer.
+**Affected component:** `scripts/run_pipeline_demo.py` default `SAMPLE_VIDEO_URL`
+**Date found:** Week 2 (June 12)
+
+---
+
+## Streamlit: collapsed sidebar loses its expand control
+**Symptom:** With custom CSS theming active, collapsing the dashboard sidebar leaves no visible way to expand it again — the `collapsedControl` element is hidden/unstyled.
+**Root cause:** Streamlit's built-in expand chevron is fragile under custom CSS and its test-ids change between versions.
+**Fix / workaround:** Inject a persistent ☰ button into the parent page DOM via `components.html` JS (`id="pg-menu-btn"`, fixed top-left). Click handler tries `collapsedControl`, then `stSidebarCollapseButton`, then the first sidebar button. A `MutationObserver` re-creates the button if Streamlit re-renders the DOM.
+**Affected component:** Layer 5 — `src/dashboard/app.py`
+**Date found:** Week 2 (June 12)
+
+---
+
+## Phase 2 text-only mode: keyframes not accessible from Content Understanding result
+**Symptom:** Phase 2 GPT-4o returns generic responses ("Worker's primary action is unclear",
+`tool_in_use: null`, `component_contact: null`) even when the correct SOP-video pair is used.
+All verdicts return "Unable to Verify".
+**Root cause:** The `prebuilt-video` base analyzer returns a markdown description per segment
+containing only relative keyframe filenames (`![](keyFrame.1500.jpg)`) — not absolute URLs.
+These are internal references with no backing storage accessible after the result is returned:
+- `GET analyzerResults/{opId}/keyFrames/keyFrame.1500.jpg` → 404
+- `GET analyzerResults/{opId}/contents/0/keyFrames/...` → 404
+- `AnalysisContent.key_frame_times_ms` → `None` (not populated by base analyzer)
+GPT-4o received a list of keyframe filenames as text input and correctly abstained.
+**Fix / workaround:** Use OpenCV (`cv2.VideoCapture`) to open the video URL directly (supports
+Blob SAS URLs). Extract frames at evenly-spaced timestamps, resize to 512px, encode as base64
+JPEG data URIs, pass to GPT-4o Vision. Implemented in `run_video_phase2(video_url=...)` and
+`extract_compliance_fields(keyframe_images=[...])` in `video_analyzer.py`.
+**Affected component:** Layer 2 — `video_analyzer.py`; Layer 3 — `pipeline.py`
+**Date found:** Week 2 (June 12)
+
+---
+
+## GPT-4o 429 RateLimitError exhausts tenacity retries on concurrent pipeline runs
+**Symptom:** `tenacity.RetryError` wrapping `openai.RateLimitError` when multiple pipeline runs
+are executing in parallel. The `@retry(stop=stop_after_attempt(3), wait=wait_exponential(max=10))`
+decorator on `extract_compliance_fields` runs out of attempts (3 × 10s = 30s total) before the
+rate limit window clears. The OpenAI SDK's own internal retry also can't recover in this window.
+**Root cause:** Three simultaneous pipeline runs each make 30 GPT-4o calls (1 Phase 2 + 29
+reasoning steps) = 90 concurrent requests hitting the same deployment. Combined with high-detail
+Vision images per call, token rate is exceeded.
+**Fix / workaround:**
+  1. Run pipeline instances sequentially, not in parallel
+  2. Raised tenacity ceiling: `stop_after_attempt(6)`, `wait_exponential(multiplier=2, min=5, max=90)`
+     — allows up to ~5 minutes of retries per call to survive sustained rate-limit windows
+**Affected component:** `src/ingestion/video_analyzer.py` `extract_compliance_fields` retry decorator
+**Date found:** Week 2 (June 12)
+
+---
+
+## Content Understanding: prebuilt-video returns ONE segment for continuous footage → mass abstention + fake timestamps
+**Symptom:** Every demo clip was analysed as a single segment spanning the whole 4–5 min video. All 29 SOP criteria were then judged against that one undifferentiated blob, so ~27–29 steps came back "Unable to Verify" and the few verdicts that did render cited the entire clip (e.g. `0.0s–263.0s`) as their "evidence." The June 12 `chassis_error` run even produced 2 "Deviation Detected" verdicts later confirmed to be **false positives** — GPT-4o treating *absence* of an observed QC step as a violation.
+**Root cause:** `prebuilt-video` segments by shot/scene cut. Continuous single-take assembly footage has no cuts, so it correctly returns one segment for the whole clip — which silently destroys the evidence-localization the pipeline depends on.
+**Fix / workaround:** Stop relying on shot-cut segmentation. `build_time_windowed_segments()` (`video_analyzer.py`) imposes fixed ~25s time windows over the clip duration; `run_video_phase2()` runs the GPT-4o Vision pass per window. `pipeline.py` Step 3 re-segments into windows before Phase 2. Each verdict now localizes to a tight ~25s slice. `probe_video_duration()` (OpenCV) is the duration fallback when Content Understanding reports no usable bounds.
+**Affected component:** Layer 2 — `video_analyzer.py`; Layer 3 — `pipeline.py`
+**Date found:** Week 4 (June 16)
+
+---
+
+## IndustReal demo clips ship with ground-truth labels burned into the video
+**Symptom:** Frames from the `wrong_pin` and `chassis_error` clips have a green action caption (e.g. "Install front chassis pin"), a binary assembly-state vector (e.g. `11110110000`), and a bounding box rendered directly into the picture. The `correct` clip is clean raw footage.
+**Root cause:** Those two clips are IndustReal's **annotated visualization renders**, not the raw egocentric recordings — the labels are part of the Procedure-Step-Recognition demo output.
+**Impact (demo integrity):** GPT-4o Vision sees those captions, so verdicts on those clips may be reading the answer key rather than observing the assembly — and any demo audience sees the labels on screen. Disqualifying for a "we don't fabricate" tool.
+**Fix / workaround:** Demo on the **clean `correct` clip only**; the two annotated clips were dropped from the dashboard. A real "wrong assembly" demo needs clean (unlabeled) footage with a *grossly visible* error — the planted faults here (wrong-LENGTH pin) are not resolvable at 1 fps / 768 px anyway (even IndustReal's own model "does not see error in front chassis"). Inspect frames with OpenCV (no GPT cost) before trusting any error clip.
+**Affected component:** Demo data — `demo_results_{wrong_pin,chassis_error}_*.json`; dashboard demo buttons
+**Date found:** Week 4 (June 16)
+**Source:** https://github.com/timschoonbeek/industreal
 
 ---
 

@@ -7,27 +7,34 @@ Deterministic control flow — no LLM agents, just direct module calls.
 Flow:
   1. Extract SOP steps (Document Intelligence)
   2. Generate compliance checklist (GPT-4o)
-  3. Segment video + extract compliance fields (Content Understanding + GPT-4o)
+  3. Probe video duration (OpenCV) → time-windowed segments → GPT-4o Vision field extraction
   4. Validate sequence and timing (deterministic)
   5. Reason each checklist item against observations (GPT-4o)
-  6. Merge timing into verdicts, compute adherence score
+  6. Merge timing into verdicts, apply absence inference, compute adherence score
 
-Not yet wired (Week 3):
-  - Blob Storage upload/download (cosmos_client, blob_client stubs)
-  - Cosmos DB persistence
-  - Agent wrappers (sop_agent, reasoning_agent)
-
-Returns a full results dict for the dashboard. In production this will
-persist to Cosmos DB and return only run_id.
+Returns a full results dict for the dashboard.
 """
 import logging
+import os
 import uuid
 from datetime import datetime, timezone
 
+from config import cfg
 from src.ingestion.sop_extractor import extract_sop_steps
-from src.ingestion.video_analyzer import analyze_video, parse_observations, run_video_phase2
+from src.ingestion.video_analyzer import (
+    build_time_windowed_segments,
+    probe_video_duration,
+    run_video_phase2,
+    extract_keyframes_batch,
+)
+from src.storage.blob_client import write_keyframe
 from src.reasoning.checklist_generator import generate_checklist
-from src.reasoning.compliance_engine import reason_step
+from src.reasoning.compliance_engine import (
+    apply_absence_inference,
+    build_verdict_record,
+    enforce_unique_evidence,
+    reason_step,
+)
 from src.reasoning.sequence_timing import validate_sequence_and_timing
 
 logger = logging.getLogger(__name__)
@@ -100,14 +107,25 @@ def run_pipeline(
     checklist = generate_checklist(sop_steps, run_id)
     logger.info(f"[2/5] Done — {checklist['total_items']} checklist items")
 
-    # ── Step 3: Video analysis (Phase 1 + Phase 2) ────────────────────────────
+    # ── Step 3: Video analysis (time-windowed Phase 2) ────────────────────────
     logger.info(f"[3/5] Analyzing video | url={video_url[:60]}")
-    raw_result = analyze_video(video_url, run_id)
-    observations = parse_observations(raw_result, run_id, video_url)
-    logger.info(f"[3/5] Phase 1 done — {observations['total_segments']} segment(s)")
+    duration = probe_video_duration(video_url)
+    observations = {
+        "run_id": run_id,
+        "video_url": video_url,
+        "video_duration_seconds": duration,
+        "segments": [],
+        "total_segments": 0,
+    }
+    observations["segments"] = build_time_windowed_segments(duration, window_seconds=25.0)
+    observations["total_segments"] = len(observations["segments"])
+    logger.info(
+        f"[3/5] Duration={duration:.0f}s — segmented into {observations['total_segments']} "
+        f"time window(s)"
+    )
 
     logger.info(f"[3/5] Running GPT-4o Phase 2 compliance field extraction")
-    run_video_phase2(observations, run_id)
+    run_video_phase2(observations, run_id, video_url=video_url, checklist=checklist)
     logger.info(f"[3/5] Phase 2 done")
 
     # ── Step 4: Sequence and timing validation ────────────────────────────────
@@ -127,23 +145,7 @@ def run_pipeline(
             verdict = reason_step(item, observations, run_id)
         except Exception as exc:
             logger.error(f"reason_step failed | {item_id} | {exc}")
-            verdict = {
-                "run_id": run_id,
-                "item_id": item_id,
-                "step_id": item.get("step_id", ""),
-                "sequence": item.get("sequence"),
-                "criterion": item.get("criterion", ""),
-                "verdict": "Unable to Verify",
-                "confidence": 0.0,
-                "evidence_segment_id": None,
-                "evidence_timestamp_start": None,
-                "evidence_timestamp_end": None,
-                "keyframe_blob_path": None,
-                "reasoning": f"Reasoning engine error: {exc}",
-                "sequence_ok": None,
-                "duration_ok": None,
-                "created_at": datetime.now(timezone.utc).isoformat(),
-            }
+            verdict = build_verdict_record(item, run_id, reasoning=f"Reasoning engine error: {exc}")
 
         # Merge timing results into verdict
         timing = timing_by_item.get(item_id)
@@ -157,10 +159,38 @@ def run_pipeline(
             f"(confidence={verdict['confidence']:.2f})"
         )
 
+    # Honesty guard: one window can't back multiple distinct Compliant steps.
+    verdicts = enforce_unique_evidence(verdicts)
+
+    # Absence inference: upgrade UTV → Deviation Detected for presence-tier steps
+    # where no window showed any key-object signal and the clip is fully covered.
+    verdicts = apply_absence_inference(verdicts, observations, checklist.get("items", []))
+
+    # ── Step 6: Extract and save real keyframe images in batch ────────────────
+    logger.info(f"[6/6] Batch extracting evidence keyframe images from video...")
+    targets = []
+    for v in verdicts:
+        if v.get("verdict") in ("Compliant", "Deviation Detected"):
+            start_time = v.get("evidence_timestamp_start")
+            if start_time is not None:
+                targets.append({"step_id": v.get("step_id", "step"), "timestamp_s": start_time})
+
+    if targets:
+        try:
+            batch_results = extract_keyframes_batch(video_url, targets)
+            for v in verdicts:
+                step_id = v.get("step_id")
+                if step_id in batch_results:
+                    keyframe_path = write_keyframe(batch_results[step_id], run_id, step_id)
+                    v["keyframe_blob_path"] = keyframe_path
+        except Exception as exc:
+            logger.error(f"Failed during batch keyframe extraction: {exc}")
+
     # ── Summary ───────────────────────────────────────────────────────────────
     compliant = sum(1 for v in verdicts if v["verdict"] == "Compliant")
     deviation = sum(1 for v in verdicts if v["verdict"] == "Deviation Detected")
     unable = sum(1 for v in verdicts if v["verdict"] == "Unable to Verify")
+    inspection = sum(1 for v in verdicts if v["verdict"] == "Requires Inspection")
     score = _adherence_score(verdicts)
 
     logger.info(
@@ -169,7 +199,7 @@ def run_pipeline(
         f"adherence={score}"
     )
 
-    return {
+    result_dict = {
         "run_id": run_id,
         "sop_steps": sop_steps,
         "checklist": checklist,
@@ -181,5 +211,21 @@ def run_pipeline(
             "compliant": compliant,
             "deviation": deviation,
             "unable_to_verify": unable,
+            "requires_inspection": inspection,
         },
     }
+
+    # ── Step 7: Auto-save run record to runs store ────────────────────────────
+    # Wrapped in a safe try/except so that write failures (e.g. read-only file systems in tests)
+    # never crash the pipeline run.
+    try:
+        run_file = os.path.join(cfg.runs_dir, f"{run_id}.json")
+        os.makedirs(cfg.runs_dir, exist_ok=True)
+        import json
+        with open(run_file, "w", encoding="utf-8") as f:
+            json.dump(result_dict, f, indent=2, ensure_ascii=False, default=str)
+        logger.info(f"Auto-saved run record to runs store: {run_file}")
+    except Exception as exc:
+        logger.error(f"Guarded auto-save failed | {run_id} | {exc}")
+
+    return result_dict
