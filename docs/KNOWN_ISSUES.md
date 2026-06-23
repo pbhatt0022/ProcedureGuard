@@ -281,4 +281,15 @@ Vision images per call, token rate is exceeded.
 
 ---
 
+## Deterministic baseline-diff (window-count signature) cannot recover part counts — abandoned
+**Symptom:** A "baseline-diff" pass (`action_signature.py` + `apply_baseline_diff`) reduced each run to a per-action count = number of Phase-2 windows mentioning that action, then flagged a checklist item when a *stable* action's count dropped to ≤50% of a known-good 3-run baseline. Proof run on 3 clips (June 22): it fired **zero** deltas and gave **zero** recall on the count error.
+**Root cause:** Window-count is not a proxy for part-count. The baseline clip (23_assy_0_1) yielded 6 wheel-windows; the count-error clip 23_assy_1_2 (GT `fit_wheel:-1`, one *fewer* wheel) yielded **9** — *more*, not fewer. Window count tracks camera dwell time and VLM verbosity, not how many wheels were mounted. No threshold recovers a −1 error from a signal that moves the wrong direction.
+**Fix / workaround:** Approach abandoned and code deleted (the deterministic text-signature path can't recover counts — the signal isn't in the VLM narration). The real fix is per-component perception: IndustReal's **Assembly State Detection** model emits a per-component `1/-1/0` state vector (correctly/incorrectly/not assembled) — that IS the count/state signal. Apache-2.0, PyTorch weights published; Phase 3-B deploy on Azure ML. Do NOT reintroduce a count proxy from VLM text, and do NOT lower the drop ratio to manufacture recall (honesty principle: zero false alarms > recall).
+**Evidence retained:** `experiments/sop_gt/proofrun_*.json` + `proofrun.log` (the three measured runs).
+**Affected component:** Layer 3 — was `src/reasoning/action_signature.py`, `apply_baseline_diff` in `compliance_engine.py`, `--baseline-signature` in `scripts/validate_error_clip.py` (all removed)
+**Date found:** Week 4 (June 22)
+**Source:** https://github.com/TimSchoonbeek/IndustReal · weights: https://data.4tu.nl/datasets/b008dd74-020d-4ea4-a8ba-7bb60769d224
+
+---
+
 ## [Add new issues below this line as you find them]
