@@ -13,6 +13,31 @@ import Link from 'next/link';
 export default function VideoEvidencePage() {
   const { allRuns, isLoading, error } = useApp();
 
+  const videos = React.useMemo(() => {
+    return allRuns.map(run => {
+      const obs = run.data.observations || {};
+      const segments = obs.segments || [];
+      const duration = obs.video_duration_seconds || 306.0;
+      const srcName = obs.video_file || obs.video_url || '';
+
+      // Check if video is pre-annotated
+      const isAnnotated = srcName.toLowerCase().includes('annotated');
+
+      return {
+        runId: run.id,
+        filename: srcName || 'video_footage.mp4',
+        displayName: srcName ? srcName.replace(/\\/g, '/').split('/').pop() : 'video_footage.mp4',
+        duration,
+        durationText: `${Math.floor(duration / 60)}:${Math.round(duration % 60).toString().padStart(2, '0')}`,
+        segmentsCount: obs.total_segments || segments.length,
+        analyzerId: obs.analyzer_id || 'procedureguard_compliance_v1',
+        isAnnotated,
+        sopName: run.data.sop_steps?.sop_document || '-'
+      };
+    });
+  }, [allRuns]);
+
+  // Early returns AFTER all hooks (stable hook order across renders).
   if (isLoading) {
     return (
       <div className="p-6 flex flex-col gap-4 animate-pulse max-w-7xl mx-auto w-full select-none">
@@ -46,29 +71,6 @@ export default function VideoEvidencePage() {
       </div>
     );
   }
-
-  const videos = React.useMemo(() => {
-    return allRuns.map(run => {
-      const obs = run.data.observations || {};
-      const segments = obs.segments || [];
-      const duration = obs.video_duration_seconds || 306.0;
-
-      // Check if video is pre-annotated
-      const isAnnotated = obs.video_file?.toLowerCase().includes('annotated') || false;
-
-      return {
-        runId: run.id,
-        filename: obs.video_file || 'video_footage.mp4',
-        displayName: obs.video_file ? obs.video_file.split('/').pop() : 'video_footage.mp4',
-        duration,
-        durationText: `${Math.floor(duration / 60)}:${Math.round(duration % 60).toString().padStart(2, '0')}`,
-        segmentsCount: obs.total_segments || segments.length,
-        analyzerId: obs.analyzer_id || 'procedureguard_compliance_v1',
-        isAnnotated,
-        sopName: run.data.sop_steps?.sop_document || '-'
-      };
-    });
-  }, [allRuns]);
 
   return (
     <div className="p-6 flex flex-col gap-6 overflow-y-auto max-w-7xl mx-auto w-full select-none">

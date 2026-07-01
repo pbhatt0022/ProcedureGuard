@@ -1,0 +1,47 @@
+[
+  {
+    "run_id": "RUN-102",
+    "step_id": "STEP-01",
+    "sequence_number": 1,
+    "step_name": "Verify chassis alignment",
+    "sop_reference": "VASOP-01",
+    "checklist_item": "Confirm chassis alignment markers match the SOP reference before proceeding.",
+    "verification_method": "Top-down alignment marker confirmation"
+  },
+  {
+    "run_id": "RUN-102",
+    "step_id": "STEP-02",
+    "sequence_number": 2,
+    "step_name": "Install battery harness",
+    "sop_reference": "VASOP-02",
+    "checklist_item": "Route the battery harness through the left retaining clip before connector lock.",
+    "verification_method": "Left-side harness routing and clip engagement check"
+  },
+  {
+    "run_id": "RUN-102",
+    "step_id": "STEP-03",
+    "sequence_number": 3,
+    "step_name": "Torque wheel nuts",
+    "sop_reference": "VASOP-03",
+    "checklist_item": "Apply the five-point torque sequence and confirm final torque is within threshold.",
+    "verification_method": "Torque pattern and threshold confirmation"
+  },
+  {
+    "run_id": "RUN-102",
+    "step_id": "STEP-04",
+    "sequence_number": 4,
+    "step_name": "Attach protective cap",
+    "sop_reference": "VASOP-04",
+    "checklist_item": "Attach the protective cap after confirming a clear top-down camera view.",
+    "verification_method": "Camera-visible cap attachment confirmation"
+  },
+  {
+    "run_id": "RUN-102",
+    "step_id": "STEP-05",
+    "sequence_number": 5,
+    "step_name": "Final dashboard indicator check",
+    "sop_reference": "VASOP-05",
+    "checklist_item": "Validate all dashboard indicators illuminate and clear during final startup.",
+    "verification_method": "Dashboard indicator state verification"
+  }
+]

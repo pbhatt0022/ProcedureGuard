@@ -1,0 +1,37 @@
+[
+  {
+    "run_id": "RUN-102",
+    "sop_name": "Vehicle Assembly SOP",
+    "operator_id": "OP-17",
+    "workstation": "WS-04",
+    "status": "Completed",
+    "started_at": "2026-06-16T08:00:00Z",
+    "completed_at": "2026-06-16T08:42:00Z",
+    "step_count": 5,
+    "summary": "Run completed with two deviations, one unable-to-verify step, and two incident tickets.",
+    "compliance_summary": {
+      "compliant_steps": 2,
+      "deviation_steps": 2,
+      "unable_to_verify_steps": 1,
+      "adherence_score": 40,
+      "overall_status": "Non-compliant",
+      "manual_review_required": true
+    },
+    "sequence_analysis": {
+      "source": "Agent 2 deterministic sequence/timing results",
+      "steps_out_of_order": [],
+      "timing_gaps": [],
+      "notes": [
+        "No out-of-order execution detected in this run.",
+        "No deterministic cure-time violation was recorded."
+      ]
+    },
+    "review_summary": {
+      "priority_steps": [
+        "STEP-03",
+        "STEP-04"
+      ],
+      "reason": "Critical deviation on STEP-03 and insufficient evidence on STEP-04 require QA attention."
+    }
+  }
+]

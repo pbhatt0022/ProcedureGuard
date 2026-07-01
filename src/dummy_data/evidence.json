@@ -1,0 +1,78 @@
+[
+  {
+    "evidence_id": "EV-1001",
+    "run_id": "RUN-102",
+    "step_id": "STEP-01",
+    "type": "keyframe",
+    "timestamp": "2026-06-16T08:04:56Z",
+    "blob_path": "dummy://procedure-guard/runs/RUN-102/keyframes/step-01.jpg",
+    "description": "Keyframe showing chassis alignment markers within tolerance."
+  },
+  {
+    "evidence_id": "EV-1002",
+    "run_id": "RUN-102",
+    "step_id": "STEP-01",
+    "type": "video_clip",
+    "start_time": "2026-06-16T08:04:45Z",
+    "end_time": "2026-06-16T08:05:05Z",
+    "blob_path": "dummy://procedure-guard/runs/RUN-102/clips/step-01.mp4",
+    "description": "Clip covering the chassis alignment verification."
+  },
+  {
+    "evidence_id": "EV-1003",
+    "run_id": "RUN-102",
+    "step_id": "STEP-02",
+    "type": "keyframe",
+    "timestamp": "2026-06-16T08:11:58Z",
+    "blob_path": "dummy://procedure-guard/runs/RUN-102/keyframes/step-02.jpg",
+    "description": "Keyframe showing the battery harness missing the retaining clip."
+  },
+  {
+    "evidence_id": "EV-1004",
+    "run_id": "RUN-102",
+    "step_id": "STEP-02",
+    "type": "video_clip",
+    "start_time": "2026-06-16T08:11:40Z",
+    "end_time": "2026-06-16T08:12:10Z",
+    "blob_path": "dummy://procedure-guard/runs/RUN-102/clips/step-02.mp4",
+    "description": "Clip of battery harness installation with skipped retaining clip."
+  },
+  {
+    "evidence_id": "EV-1005",
+    "run_id": "RUN-102",
+    "step_id": "STEP-03",
+    "type": "keyframe",
+    "timestamp": "2026-06-16T08:19:55Z",
+    "blob_path": "dummy://procedure-guard/runs/RUN-102/keyframes/step-03.jpg",
+    "description": "Keyframe showing the torque tool reading below the required threshold."
+  },
+  {
+    "evidence_id": "EV-1006",
+    "run_id": "RUN-102",
+    "step_id": "STEP-03",
+    "type": "video_clip",
+    "start_time": "2026-06-16T08:19:40Z",
+    "end_time": "2026-06-16T08:20:15Z",
+    "blob_path": "dummy://procedure-guard/runs/RUN-102/clips/step-03.mp4",
+    "description": "Clip showing an incomplete torque sequence on the wheel nuts."
+  },
+  {
+    "evidence_id": "EV-1007",
+    "run_id": "RUN-102",
+    "step_id": "STEP-04",
+    "type": "keyframe",
+    "timestamp": "2026-06-16T08:27:59Z",
+    "blob_path": "dummy://procedure-guard/runs/RUN-102/keyframes/step-04.jpg",
+    "description": "Keyframe showing the operator blocking the camera view during protective cap attachment."
+  },
+  {
+    "evidence_id": "EV-1008",
+    "run_id": "RUN-102",
+    "step_id": "STEP-05",
+    "type": "video_clip",
+    "start_time": "2026-06-16T08:36:50Z",
+    "end_time": "2026-06-16T08:37:20Z",
+    "blob_path": "dummy://procedure-guard/runs/RUN-102/clips/step-05.mp4",
+    "description": "Clip of final dashboard indicator validation."
+  }
+]

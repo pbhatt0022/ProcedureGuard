@@ -16,19 +16,20 @@ const RUNS_DIR = process.env.PROCEDUREGUARD_RUNS_DIR
   ? path.resolve(process.env.PROCEDUREGUARD_RUNS_DIR)
   : path.resolve(process.cwd(), '..', 'runs');
 
-// Map metadata for the three demo runs so their UI labels match the original specification
+// Friendly labels for the current ASD demo runs (GT-grounded 6-item checklist).
+// Old 29-item VLM-manual runs were removed June 24 — they used a superseded pipeline.
 const DEMO_METADATA: Record<string, { name: string; description: string }> = {
-  'run-20260618-1e0ebcb5': {
-    name: 'IndustReal honest mix (Candidate 22)',
-    description: 'Mixed evidence with explicit abstentions and inspection-only checks.'
+  'run-asd-23_assy_0_1': {
+    name: 'ASD — Clean baseline (23)',
+    description: 'IndustReal ASD perception on a correct build: all in-ontology steps Compliant; wing-beam & pulley honestly Unable to Verify (not in the model ontology).'
   },
-  'run-20260618-da40bd3c': {
-    name: 'IndustReal baseline (Baseline 23)',
-    description: 'Reference report from the IndustReal evaluation set.'
+  'run-asd-23_assy_1_2': {
+    name: 'ASD — Missing front wheel (23)',
+    description: 'ASD flags the missing wheel as a Deviation — the count error the VLM scored Compliant. Zero false alarms.'
   },
-  'run-20260616-5b0b97e6': {
-    name: 'IndustReal candidate (Candidate 16)',
-    description: 'Additional candidate run for comparing evidence density and review posture.'
+  'run-asd-22_assy_2_3': {
+    name: 'ASD — Missing wing-beam & pulley (22)',
+    description: 'Parts outside the ASD model ontology stay honest Unable to Verify rather than fabricated verdicts.'
   }
 };
 

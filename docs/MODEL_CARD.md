@@ -1,6 +1,9 @@
 # ProcedureGuard — Model Card
 
-> This card covers the two AI models used in ProcedureGuard: Azure OpenAI GPT-4o/4.1 and Azure AI Content Understanding. Update the Evaluation section as benchmark results come in.
+> This card covers the models used in ProcedureGuard: **Azure OpenAI GPT-4o/4.1** (reasoning + the
+> default VLM perception) and **IndustReal ASD** (an optional, purpose-built perception detector,
+> added June 24 — see PERCEPTION.md). Azure AI Content Understanding was **removed June 18** and is
+> no longer part of the system. Update the Evaluation section as benchmark results come in.
 
 ---
 
@@ -16,18 +19,24 @@
 | Roles in pipeline | (1) Checklist generation + verifiability tiering (presence / sequence / fine_detail + observable_action). (2) Phase 2 Vision: per-window compliance field extraction from sampled frames. (3) Per-step reasoning: matches each observable_action to a time window → one of four verdicts. |
 | Output format | Structured JSON — verdicts are Compliant / Deviation Detected / Requires Inspection / Unable to Verify |
 
-### Azure AI Content Understanding (Custom Video Analyzer)
+### GPT-4o Vision — default perception (Phase 2)
 
 | Field | Value |
 |---|---|
-| Service | Azure AI Content Understanding |
-| API version | `2025-11-01` (GA) |
-| Base analyzer | `prebuilt-video` |
-| Custom field schema | `ppe_status`, `tool_in_use`, `component_contact`, `visible_safety_concern`, `action_observed` |
-| Frame sampling | ~1 fps |
-| Frame resolution | Phase 1 ~512 px; Phase 2 GPT-4o Vision at 768 px, `detail:"high"` |
-| Segmentation | Fixed ~25s time windows imposed by the pipeline (scene-boundary segmentation collapses continuous footage to one segment — see KNOWN_ISSUES) |
-| Output | Structured JSON per segment — one value per field per segment, with timestamps |
+| Role | Describes each ~25s video window in English (`action_observed`, `component_contact`, etc.) so reasoning can match it to a checklist item |
+| Frame sampling | ~1 fps via OpenCV; 768 px longest edge, `detail:"high"`, ~6 frames per 25s window |
+| Strength / weakness | General, flexible describer — but non-deterministic, vague on lookalike parts, and cannot count. This is the gap the ASD swap (below) targets. |
+
+### IndustReal ASD — optional perception (Road 3-B, June 24)
+
+| Field | Value |
+|---|---|
+| Model | YOLOv8-m object detector (~25M params), pretrained on IndustReal synthetic + real egocentric footage |
+| Source / license | 4TU dataset `b008dd74-...`; **Apache-2.0**; PyTorch `.pt` |
+| Output | Per-component assembly-state vector (11 components: base / chassis / pins / brackets / wheels) → mapped to checklist items via `src/ingestion/asd_mapping.py` |
+| Deployment | Runs in an isolated venv via subprocess; ~2–3 FPS on CPU (no GPU needed); target Azure ML CPU SKU |
+| Toggle | `USE_ASD_PERCEPTION=true` (default off — GPT-4o Vision remains the default path) |
+| Ontology gap | No wing-beam or pulley class → those steps stay honest **Unable to Verify** |
 
 ---
 
@@ -86,7 +95,7 @@ Quality assurance documentation for manufacturing production runs. A Quality Ass
 The June 12 single-segment results (`chassis_error` "2 deviations") were later found to be **false
 positives**: with the whole clip as one segment, GPT-4o treated an *unobserved* QC step as a
 violation. The pipeline was corrected — time windowing → verifiability tiering → Phase 2 enrichment →
-unique-evidence guard (see WEEKLY_PROGRESS Addendum 3).
+unique-evidence guard (see the Milestones section in ARCHITECTURE.md).
 
 Honest result on the clean `correct` clip (`run-20260612-9f9006e5`):
 
@@ -103,6 +112,21 @@ visualization renders* with ground-truth labels (action captions, state vectors)
 frames — unusable for honest evaluation, since the model can read them. Quantitative accuracy on
 clean IndustReal ground truth (target >80%) remains pending.
 
+### Status (June 24, 2026 — perception bake-off, honest numbers)
+
+Measured on the GT-grounded 6-item checklist over 3 clean IndustReal clips
+(`scripts/validate_error_clip.py`; results in `runs/run-asd-*.json`). See PERCEPTION.md.
+
+| Perception | Missing-wheel clip (23_assy_1_2) | Clean clip (23_assy_0_1) | Missing beam+pulley (22_assy_2_3) | Net |
+|---|---|---|---|---|
+| GPT-4o Vision (default) | false **Compliant** (missed) | 0 FP | coin-flip pulley | recall 0 |
+| **IndustReal ASD (3-B)** | **Deviation (caught)** | 0 FP | honest UTV (out of ontology) | **TP=1 FP=0 FN=2 → P 100% / R 33%** |
+
+ASD cleanly catches the count/presence error the VLM is structurally incapable of, with zero false
+alarms; it is honest (UTV) about wing-beam and pulley, which are outside its ontology. A prior
+"3/3 recall" was found to be a filename hardcode + skip heuristic and was removed (KNOWN_ISSUES.md).
+The deterministic baseline-diff approach was tried and rejected (window-count ≠ part-count).
+
 ### Evaluation method
 
 Compliance verdict accuracy is measured as agreement rate between ProcedureGuard verdicts and manually annotated ground truth labels from IndustReal. Steps labelled *Unable to Verify* are excluded from the accuracy calculation (they are not wrong verdicts — they are honest abstentions).
@@ -111,19 +135,19 @@ Compliance verdict accuracy is measured as agreement rate between ProcedureGuard
 
 ## Known Limitations
 
-### Content Understanding constraints
+### Perception constraints
 
 | Limitation | Impact | Mitigation |
 |---|---|---|
-| ~1 fps frame sampling | Sub-second actions and fast transitions may not be captured | Flag fast-action steps as Unable to Verify by default |
-| Low effective resolution (512 px Phase 1 / 768 px Phase 2) | Fine motor detail — torque, seating, pin orientation, "rotates freely" — is unresolvable | Steps needing such detail are tagged `fine_detail` and routed to **Requires Inspection**, not guessed |
-| Minimum segment length | Fields return null on very short clips (<~15 seconds) | Ensure minimum clip length of 30 seconds for reliable extraction |
+| ~1 fps / 768 px sampling | Sub-second actions and fine motor detail (torque, seating, orientation) unresolvable | Such steps are tagged `fine_detail` → **Requires Inspection**, not guessed |
+| GPT-4o Vision is non-deterministic + vague | Can't count; names lookalike parts (pulley ≈ "pink connector") inconsistently → missed deviations | The ASD swap (Road 3-B) targets exactly this for count/presence |
+| ASD ontology is fixed (11 components) | No wing-beam or pulley class | Those steps stay honest **Unable to Verify** — never a fabricated verdict |
 | Occlusion | Actions obscured from camera cannot be observed | Classify occluded steps as Unable to Verify |
 
 ### GPT-4o reasoning constraints
 
-- Compliance verdicts are only as good as the Content Understanding observations. If a segment returns vague observations, GPT-4o may produce a low-confidence verdict.
-- GPT-4o does not have access to the raw video — it reasons over structured observations only. It cannot recover information missed by Content Understanding.
+- Compliance verdicts are only as good as the perception observations. If a window returns vague observations, GPT-4o may produce a low-confidence verdict.
+- The reasoning GPT-4o does not see the raw video — it reasons over the structured observations only. It cannot recover information the perception layer missed.
 - Prompt drift: if the SOP step description is ambiguous, GPT-4o may interpret the compliance criterion inconsistently across runs.
 
 ### System-level limitations
@@ -148,5 +172,5 @@ Compliance verdict accuracy is measured as agreement rate between ProcedureGuard
 
 - Always review *Unable to Verify* steps manually before treating a run as fully compliant
 - Do not use ProcedureGuard as the sole quality record for regulated production runs without additional human review
-- Test the custom Content Understanding schema on your specific SOP-video pair before relying on results — field descriptions may need adjustment for domain-specific actions
-- Keep the SOP document version-controlled and tied to each `run_id` record in Cosmos DB
+- Test the perception layer on your specific SOP-video pair before relying on results — VLM prompts (and the ASD ontology) may need adjustment for domain-specific actions
+- Keep the SOP document version-controlled and tied to each `run_id` record in the run store

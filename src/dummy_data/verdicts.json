@@ -1,0 +1,80 @@
+[
+  {
+    "run_id": "RUN-102",
+    "step_id": "STEP-01",
+    "step_name": "Verify chassis alignment",
+    "sop_instruction": "Confirm chassis alignment markers match the SOP reference before proceeding.",
+    "verdict": "Compliant",
+    "reason": "Alignment markers matched SOP tolerance and operator completed the check in sequence.",
+    "timestamp": "2026-06-16T08:05:00Z",
+    "confidence": 0.97,
+    "severity": "Low",
+    "evidence_ids": [
+      "EV-1001",
+      "EV-1002"
+    ],
+    "ticket_id": null
+  },
+  {
+    "run_id": "RUN-102",
+    "step_id": "STEP-02",
+    "step_name": "Install battery harness",
+    "sop_instruction": "Route the battery harness through the left retaining clip before connector lock.",
+    "verdict": "Deviation",
+    "reason": "Battery harness routing skipped the left-side retaining clip required by the SOP.",
+    "timestamp": "2026-06-16T08:12:00Z",
+    "confidence": 0.92,
+    "severity": "High",
+    "evidence_ids": [
+      "EV-1003",
+      "EV-1004"
+    ],
+    "ticket_id": "INC-2044"
+  },
+  {
+    "run_id": "RUN-102",
+    "step_id": "STEP-03",
+    "step_name": "Torque wheel nuts",
+    "sop_instruction": "Apply the five-point torque sequence and confirm final torque is within threshold.",
+    "verdict": "Deviation",
+    "reason": "Measured torque pattern was incomplete and final torque values were below the required SOP threshold.",
+    "timestamp": "2026-06-16T08:20:00Z",
+    "confidence": 0.95,
+    "severity": "Critical",
+    "evidence_ids": [
+      "EV-1005",
+      "EV-1006"
+    ],
+    "ticket_id": "INC-2045"
+  },
+  {
+    "run_id": "RUN-102",
+    "step_id": "STEP-04",
+    "step_name": "Attach protective cap",
+    "sop_instruction": "Attach the protective cap after confirming a clear top-down camera view.",
+    "verdict": "Unable to verify",
+    "reason": "The camera view was obstructed during the attachment window, so the agent could not confirm the step outcome.",
+    "timestamp": "2026-06-16T08:28:00Z",
+    "confidence": 0.61,
+    "severity": "Medium",
+    "evidence_ids": [
+      "EV-1007"
+    ],
+    "ticket_id": null
+  },
+  {
+    "run_id": "RUN-102",
+    "step_id": "STEP-05",
+    "step_name": "Final dashboard indicator check",
+    "sop_instruction": "Validate all dashboard indicators illuminate and clear during final startup.",
+    "verdict": "Compliant",
+    "reason": "All dashboard indicators illuminated and cleared according to the final validation step.",
+    "timestamp": "2026-06-16T08:37:00Z",
+    "confidence": 0.98,
+    "severity": "Low",
+    "evidence_ids": [
+      "EV-1008"
+    ],
+    "ticket_id": null
+  }
+]

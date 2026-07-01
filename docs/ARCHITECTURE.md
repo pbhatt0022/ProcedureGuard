@@ -4,7 +4,7 @@
 
 ---
 
-## ⚠️ AS-BUILT (June 22, 2026) — authoritative; the 5-layer design below is the original plan
+## ⚠️ AS-BUILT (June 24, 2026) — authoritative; the 5-layer design below is the original plan
 
 Where the layered design below conflicts with this section, **this section wins.** The 5-layer
 Azure design was the aspiration; much of it was deliberately not built (see
@@ -24,6 +24,17 @@ Still accurate as-built: Document Intelligence (SOP extraction), GPT-4o checklis
 GPT-4o Vision Phase 2 (OpenCV frames, **768 px**, `detail:high`, ~6 frames/25s window), the
 four-verdict model and guards (below), Entra ID auth via `DefaultAzureCredential`, Blob keyframes
 (local fallback).
+
+**Perception is now dual (June 24).** The "eyes" — the layer that turns video windows into
+`observed_items` for reasoning — can be either:
+- **GPT-4o Vision (default)** — `run_video_phase2()`, describes each window in English. Flexible but
+  non-deterministic, can't count, vague on lookalike parts.
+- **IndustReal ASD (optional, `USE_ASD_PERCEPTION=true`)** — `run_video_asd()` runs a YOLOv8-m
+  detector (isolated venv, subprocess) and maps its per-component state vector to checklist items
+  via `asd_mapping.py`. Catches the count/presence errors the VLM misses; honest UTV on parts
+  outside its 11-component ontology (wing-beam, pulley). Both feed the **same** `observations`/
+  `observed_items` contract, so the reasoning + harness are unchanged. See PERCEPTION.md + MODEL_CARD.md.
+  The deterministic baseline-diff once planned for this gap was tried and rejected (KNOWN_ISSUES.md).
 
 ---
 
@@ -59,7 +70,7 @@ Layer 5 · Presentation
 
 ---
 
-## Data flow
+## Data flow *(original design — superseded; see the AS-BUILT banner above for the real flow)*
 
 ### Pipeline execution flow (triggered on upload)
 1. User uploads SOP PDF + video via Streamlit
@@ -282,3 +293,53 @@ Implementation notes:
 | Content Understanding video (Blob URL) | Max 4 GB, 2 hours ← use this |
 | Content Understanding throughput | Max 4 hours of video per minute (S0) |
 | Cosmos DB | Keyed by `run_id` — all records must include this |
+
+
+---
+
+## Project context & constraints
+*(folded in from PROJECT_CONTEXT.md + TECHNICAL_GUIDE.md + PRODUCT.md, June 24 — trimmed to as-built)*
+
+**What it is:** an AI manufacturing-procedure verifier — reads an SOP and a process video, produces
+a per-step compliance report (Compliant / Deviation Detected / Requires Inspection / Unable to
+Verify) with confidence + timestamp evidence. 4-week Microsoft internship MVP, team of 4.
+
+**Pilot persona:** Vikram Nair — QA Manager at a medical-device contract manufacturer (FDA / CE /
+ISO 13485). Pain: paper checklists cover ~5% of volume; deviations go unrecorded between visits.
+
+**Hard rules (still in force):**
+- **Azure-native** services only; **Python** for all pipeline code.
+- **Entra ID auth only — never API keys.** All `*_KEY` env fields stay blank; everything uses
+  `DefaultAzureCredential` (`az login`). The OpenAI client uses
+  `get_bearer_token_provider(DefaultAzureCredential(), "https://cognitiveservices.azure.com/.default")`.
+  Foundry hub 84-char portal keys do NOT work with the Cognitive Services SDKs. See KNOWN_ISSUES.md.
+- **GPT-4o / GPT-4.1** for reasoning. **No over-engineering** — internship demo, not production.
+- Frame sampling ~1 fps, 768px longest edge, `detail:high`, ~4–5 frames per 25s window.
+
+**As-built note:** the original design named Streamlit, Cosmos DB, Azure AI Search, Content
+Understanding, and Foundry agents. None are wired in — Next.js dashboard, local JSON run store,
+OpenCV+GPT-4o Vision, direct module calls. See the AS-BUILT banner above + DECISIONS_AND_RATIONALE.md.
+
+**Datasets:** STEMFIE vehicle-kit SOP (the procedure IndustReal participants are filmed performing —
+one shared checklist, no separate IndustReal SOP) · IndustReal WACV-2024 (demo video + accuracy
+benchmark, Apache-2.0, 4TU) · Prusa MK3S+ / OpenMarcie (Week-3 benchmark pair).
+
+**Success criteria:** SOP→checklist >90% of verifiable steps · verdict accuracy >80% vs manual
+benchmark · end-to-end latency <5 min/video · dashboard demo-ready by end of Week 4.
+
+---
+
+## Milestones (condensed from WEEKLY_PROGRESS.md)
+- **Week 1** — SOP extraction (Document Intelligence) + schema validation.
+- **Week 2** — Agent pipeline + compliance reasoning; first end-to-end run (June 12); Phase-2 GPT-4o
+  Vision mode + IndustReal clip runs.
+- **Week 3** — Integration, storage, testing.
+- **Week 4** — Dashboard + demo prep; **honesty overhaul (June 16):** time-windowing → verifiability
+  tiering → Phase-2 enrichment → unique-evidence guard.
+- **June 18** — Content Understanding removed (OpenCV duration probe + GPT-4o Vision only).
+- **June 22** — deterministic baseline-diff tried and rejected (window-count ≠ part-count; see
+  KNOWN_ISSUES.md).
+- **June 24** — perception bake-off: IndustReal ASD (Road 3-B) catches the missing wheel with zero
+  false positives; honest UTV on wing-beam/pulley (out of model ontology). See PERCEPTION.md.
+
+*(Full week-by-week journal lives in git history.)*

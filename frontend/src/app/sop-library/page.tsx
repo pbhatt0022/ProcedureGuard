@@ -14,40 +14,6 @@ export default function SopLibraryPage() {
 
   const [selectedSopName, setSelectedSopName] = useState<string | null>(null);
 
-  if (isLoading) {
-    return (
-      <div className="p-6 flex flex-col gap-4 animate-pulse max-w-7xl mx-auto w-full select-none">
-        <div className="h-8 bg-pg-surface-3 rounded w-1/4" />
-        <div className="h-4 bg-pg-surface-3 rounded w-1/3 mt-2" />
-        <div className="h-64 bg-pg-surface-3 rounded-pg-md border border-pg-hairline mt-4" />
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="p-6 flex flex-col gap-6 max-w-7xl mx-auto w-full select-none">
-        <h1 className="text-xl font-semibold text-pg-ink">Error Loading SOP Library</h1>
-        <div className="p-4 bg-pg-semantic-error-bg border-l-4 border-pg-semantic-error rounded-pg-md text-xs text-pg-ink">
-          <p className="font-bold">Failed to load SOP details:</p>
-          <p className="mt-1 font-mono text-pg-ink-muted">{error}</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (allRuns.length === 0) {
-    return (
-      <div className="p-6 flex flex-col gap-6 max-w-7xl mx-auto w-full select-none">
-        <h1 className="text-xl font-semibold text-pg-ink">SOP Library</h1>
-        <div className="p-8 bg-pg-canvas border border-pg-hairline rounded-pg-md text-center flex flex-col items-center justify-center gap-3">
-          <p className="text-sm font-semibold text-pg-ink">No SOPs available</p>
-          <p className="text-xs text-pg-ink-muted">To view reports, run the ProcedureGuard pipeline script to populate the run store.</p>
-        </div>
-      </div>
-    );
-  }
-
   // Compile unique SOPs from the runs
   const sops = React.useMemo(() => {
     const uniqueSops: Record<string, any> = {};
@@ -88,6 +54,41 @@ export default function SopLibraryPage() {
       setSelectedSopName(sops[0].name);
     }
   }, [sops, selectedSopName]);
+
+  // Early returns AFTER all hooks (stable hook order across renders).
+  if (isLoading) {
+    return (
+      <div className="p-6 flex flex-col gap-4 animate-pulse max-w-7xl mx-auto w-full select-none">
+        <div className="h-8 bg-pg-surface-3 rounded w-1/4" />
+        <div className="h-4 bg-pg-surface-3 rounded w-1/3 mt-2" />
+        <div className="h-64 bg-pg-surface-3 rounded-pg-md border border-pg-hairline mt-4" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="p-6 flex flex-col gap-6 max-w-7xl mx-auto w-full select-none">
+        <h1 className="text-xl font-semibold text-pg-ink">Error Loading SOP Library</h1>
+        <div className="p-4 bg-pg-semantic-error-bg border-l-4 border-pg-semantic-error rounded-pg-md text-xs text-pg-ink">
+          <p className="font-bold">Failed to load SOP details:</p>
+          <p className="mt-1 font-mono text-pg-ink-muted">{error}</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (allRuns.length === 0) {
+    return (
+      <div className="p-6 flex flex-col gap-6 max-w-7xl mx-auto w-full select-none">
+        <h1 className="text-xl font-semibold text-pg-ink">SOP Library</h1>
+        <div className="p-8 bg-pg-canvas border border-pg-hairline rounded-pg-md text-center flex flex-col items-center justify-center gap-3">
+          <p className="text-sm font-semibold text-pg-ink">No SOPs available</p>
+          <p className="text-xs text-pg-ink-muted">To view reports, run the ProcedureGuard pipeline script to populate the run store.</p>
+        </div>
+      </div>
+    );
+  }
 
   const activeSop = sops.find(s => s.name === selectedSopName) || sops[0] || null;
 

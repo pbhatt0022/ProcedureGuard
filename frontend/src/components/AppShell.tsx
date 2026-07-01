@@ -14,13 +14,13 @@ import {
   PersonFeedback20Regular,
   History20Regular,
   DocumentArrowDown20Regular,
+  TicketDiagonal20Regular,
   Settings20Regular,
   Search20Regular,
   ChevronLeft20Regular,
   ChevronRight20Regular,
   Person20Regular,
   QuestionCircle20Regular,
-  Play20Filled,
   DocumentCheckmark24Filled
 } from '@fluentui/react-icons';
 
@@ -188,6 +188,7 @@ function SidebarNavItems({
     { name: 'Verification Runs', href: '/runs', icon: TableSimple20Regular },
     { name: 'SOP Library', href: '/sop-library', icon: DocumentBulletList20Regular },
     { name: 'Video Evidence', href: '/video-evidence', icon: Video20Regular },
+    { name: 'Incidents',        href: '/incidents', icon: TicketDiagonal20Regular },
     { name: 'Deviations', href: '/runs?tab=STEPS&filter=Deviation%20Detected', icon: Alert20Regular, badgeKey: 'deviation' },
     { name: 'Human Review', href: '/runs?tab=REVIEW', icon: PersonFeedback20Regular, badgeKey: 'review_queue_count' },
     { name: 'Audit Trail', href: '/runs?tab=AUDIT', icon: History20Regular },

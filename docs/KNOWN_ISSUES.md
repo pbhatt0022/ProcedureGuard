@@ -292,4 +292,14 @@ Vision images per call, token rate is exceeded.
 
 ---
 
+## IndustReal ASD ontology has no wing-beam or pulley class
+**Symptom:** With `USE_ASD_PERCEPTION=true`, check-004 (wing beam) and check-006 (pulley) always return Unable to Verify, even when those parts are genuinely present or genuinely missing.
+**Root cause:** The ASD model detects 11 components (base / front+rear chassis / pins / front bracket + screw / front+rear wheel assemblies) — there is no wing-beam class, and the pulley is bundled inside the "rear wheel assembly" component so it can't be isolated. Mapping check-004→bracket or check-006→rear-wheel would falsely confirm the wrong part, so `asd_mapping.py` deliberately does not emit them.
+**Fix / workaround:** Honest UTV by design — those two steps fall through to manual verification (or the 3-A grounded-VLM road, which targets exactly these lookalike parts). Do NOT re-add a heuristic to fake a verdict for them; an earlier filename hardcode + skip heuristic that did this was removed (see DECISIONS_AND_RATIONALE.md, June 24).
+**Affected component:** `src/ingestion/asd_mapping.py`, `run_video_asd` in `video_analyzer.py`
+**Date found:** Week 4 (June 24)
+**Source:** PERCEPTION.md; the de-hardcoding review.
+
+---
+
 ## [Add new issues below this line as you find them]

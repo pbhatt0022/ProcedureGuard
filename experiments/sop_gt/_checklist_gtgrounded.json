@@ -73,10 +73,7 @@
       "sequence": 6,
       "criterion": "The middle pin must be installed, a wheel mounted, and the pulley fitted onto it, then secured with a round washer, a tooth-lock washer, and a hex nut.",
       "observable_action": "The middle pin is installed, a wheel is mounted, and the pulley is fitted onto it.",
-      "key_objects": [
-        "middle pin",
-        "pulley"
-      ],
+      "key_objects": [],
       "verifiability": "presence",
       "check_type": "presence",
       "expected_duration_seconds": null,

@@ -71,8 +71,7 @@ export function formatTimestamp(start: any, end: any): string {
 export function parseDatetime(value: any): Date | null {
   if (!value) return null;
   try {
-    const str = String(value).replace('Z', '+00:00');
-    const d = new Date(str);
+    const d = new Date(String(value));
     return isNaN(d.getTime()) ? null : d;
   } catch {
     return null;
@@ -82,14 +81,7 @@ export function parseDatetime(value: any): Date | null {
 export function formatDatetime(value: any): string {
   const parsed = parseDatetime(value);
   if (!parsed) return !value ? '-' : String(value);
-  
-  const y = parsed.getUTCFullYear();
-  const m = String(parsed.getUTCMonth() + 1).padStart(2, '0');
-  const d = String(parsed.getUTCDate()).padStart(2, '0');
-  const hh = String(parsed.getUTCHours()).padStart(2, '0');
-  const mm = String(parsed.getUTCMinutes()).padStart(2, '0');
-  
-  return `${y}-${m}-${d} ${hh}:${mm} UTC`;
+  return parsed.toISOString().slice(0, 16).replace('T', ' ') + ' UTC';
 }
 
 export function formatDuration(seconds: number | null): string {
@@ -102,7 +94,8 @@ export function formatDuration(seconds: number | null): string {
 function videoFilename(videoUrl: string | null): string {
   if (!videoUrl) return '-';
   try {
-    const parts = videoUrl.split('/');
+    // Handle both POSIX and Windows separators (run video_url is an absolute Windows path).
+    const parts = videoUrl.replace(/\\/g, '/').split('/');
     const last = parts[parts.length - 1];
     return last || '-';
   } catch {
@@ -502,8 +495,12 @@ export function buildDashboardContext(results: RunData): DashboardContext {
   const ctx: Partial<DashboardContext> = {
     run_id: results.run_id || '-',
     sop_document: results.sop_steps?.sop_document || '-',
-    video_file: observations.video_file || '',
-    video_name: videoFilename(observations.video_file),
+    // Serve the clip through the streaming API route (the raw video_url is a local
+    // file path the browser can't load). Falls back to any legacy video_file.
+    video_file: observations.video_url
+      ? `/api/runs/${results.run_id}/video`
+      : (observations.video_file || ''),
+    video_name: videoFilename(observations.video_url || observations.video_file),
     analyzer_id: observations.analyzer_id || 'procedureguard_compliance_v1',
     created_at: createdAt,
     created_at_raw: createdAtRaw ? String(createdAtRaw) : '',

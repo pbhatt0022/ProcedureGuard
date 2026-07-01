@@ -361,4 +361,32 @@ These are architectural directions flagged for discussion — not committed to y
 
 ---
 
+### Decision: Reject deterministic baseline-diff for count errors (June 22)
+**What:** A planned post-pass would reduce each run to a counted "action signature" (windows mentioning each part) and flag a step when a candidate's count dropped vs a known-good baseline.
+**Why rejected:** Proof run disproved the premise — the missing-wheel clip produced *more* wheel-windows (9) than the clean clip (6). Window-count tracks camera dwell + VLM verbosity, not part count; no threshold recovers a −1 error from a signal that moves the wrong way. Code (`action_signature.py`, `apply_baseline_diff`) deleted; finding logged in KNOWN_ISSUES.md. **Don't reintroduce a VLM-text count proxy.**
+**Source:** `experiments/sop_gt/proofrun_*.json`; June 22 session.
+
+---
+
+### Decision: Adopt IndustReal ASD as the Road 3-B perception (June 24)
+**What:** Run the perception fork as a parallel bake-off — 3-A (salvage GPT-4o Vision with reference-image grounding) vs 3-B (swap in IndustReal's ASD YOLOv8-m detector). Both feed the same `observations`/`observed_items` contract; reasoning + harness frozen; judged zero-FP-then-recall on 3 clips.
+**Why:** Phase-1B recon found ASD ships pretrained Apache-2.0 weights → deploy (days) not train (weeks). ASD's per-component state vector *is* the count/presence signal the VLM structurally lacks. Honest result: ASD catches the missing wheel, 0 FP, honest UTV on wing-beam/pulley (out of its 11-component ontology). 3-A targets exactly those blind spots → the roads may be complementary. Mentor call deferred (unavailable); decided empirically.
+**Source:** PERCEPTION.md; MODEL_CARD.md eval (June 24); `runs/run-asd-*.json`.
+
+---
+
+### Decision: Remove ASD hardcodes; clear check-006 `key_objects` (June 24)
+**What:** An early ASD integration scored a clean 3/3 via a filename hardcode (`if "22_assy_2_3" in clip_id`) + a wing-beam/pulley skip heuristic — teaching to the test. Removed both; dropped check-004/check-006 from `asd_mapping.py` (no ASD ontology for them → honest UTV). This re-exposed a pre-existing pulley false positive driven by `apply_absence_inference` on check-006's `key_objects`, so **cleared check-006 `key_objects` to `[]`** (restores the same fix applied earlier to the old check-025).
+**Why:** Honesty principle — zero false alarms outranks a headline recall number; a verdict that collapses on a filename rename is worse than an honest UTV.
+**Source:** KNOWN_ISSUES.md; June 24 review.
+
+---
+
+### Decision: Consolidate docs 16 → 6 (June 24)
+**What:** Merged the doc tree to 6 files: ARCHITECTURE (+ project context/constraints/milestones), DECISIONS, KNOWN_ISSUES, MODEL_CARD, PERCEPTION (bake-off + 3-B plan + superseded research), UI (design + build plan + product principles). SOP draft moved to `experiments/sop_gt/`. Live content merged losslessly; only confirmed-stale material (Streamlit/Cosmos/Content-Understanding stack tables) trimmed; full journal in git history.
+**Why:** 16 docs went unread; the value was fewer files, not fewer words. Aligns with the "few core docs" preference.
+**Source:** ponytail-audit; June 24 session.
+
+---
+
 ## [Add new decisions below this line]

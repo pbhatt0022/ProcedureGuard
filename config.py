@@ -48,5 +48,8 @@ class _Config:
     log_level: str = os.getenv("LOG_LEVEL", "INFO")
     runs_dir: str = os.path.abspath(os.getenv("PROCEDUREGUARD_RUNS_DIR") or os.path.join(os.path.dirname(os.path.abspath(__file__)), "runs"))
 
+    # Perception
+    use_asd_perception: bool = os.getenv("USE_ASD_PERCEPTION", "false").lower() == "true"
+
 
 cfg = _Config()

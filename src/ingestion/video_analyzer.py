@@ -15,6 +15,10 @@ import base64
 import json
 import logging
 import math
+import subprocess
+import sys
+import urllib.request
+from pathlib import Path
 
 import cv2
 from tenacity import retry, stop_after_attempt, wait_exponential
@@ -347,6 +351,114 @@ def extract_compliance_fields(
     return result
 
 
+def run_video_asd(observations: dict, video_path: str) -> dict:
+    """
+    Run ASD perception using the isolated YOLOv8-m model.
+    """
+    root = Path(__file__).parent.parent.parent
+    venv_python = root / "tmp" / "venv_asd" / "Scripts" / "python.exe"
+    helper_script = root / "src" / "ingestion" / "asd_inference_helper.py"
+    weights_path = root / "tmp" / "asd_weights" / "assembly_state_detection_model_weights" / "asd_best_IndustRealandSynthetic.pt"
+
+    # The helper needs ultralytics, which lives only in the isolated venv — the system
+    # python can't run it, so a missing venv is a hard error, not a fallback.
+    if not venv_python.exists():
+        raise RuntimeError(f"ASD venv python not found at {venv_python}; create tmp/venv_asd with ultralytics.")
+
+    logger.info(f"Running ASD inference on {video_path} via subprocess...")
+    cmd = [
+        str(venv_python),
+        str(helper_script),
+        "--video", str(video_path),
+        "--weights", str(weights_path),
+        "--fps", "1.0"
+    ]
+    
+    try:
+        res = subprocess.run(cmd, capture_output=True, text=True, check=True, encoding="utf-8")
+        data = json.loads(res.stdout)
+    except Exception as exc:
+        logger.error(f"ASD inference helper failed: {exc}")
+        if 'res' in locals() and res.stderr:
+            logger.error(f"Helper stderr: {res.stderr}")
+        raise RuntimeError(f"ASD inference failed: {exc}")
+
+    detections = data.get("detections", [])
+    logger.info(f"ASD inference complete. Got detections for {len(detections)} frames.")
+
+    # Note: the ASD model's 11-component ontology has NO wing-beam or pulley class
+    # (see asd_mapping.py), so check-004 and check-006 are not verifiable by this
+    # model — they fall through to "Unable to Verify" honestly. Earlier code special-
+    # cased them via a state-skip heuristic + a filename hardcode for 22_assy_2_3;
+    # that was overfit to one clip and has been removed.
+
+    # Map detections to checklist items and bucket into segments
+    segments = observations.get("segments", [])
+    
+    STATE_LABELS = {
+        "10000000000": ("base plate", "The operator has placed the base plate on the workbench."),
+        "11100000000": ("base plate, front chassis, front chassis pin", "The operator has mounted the front chassis braces and inserted the front chassis pin."),
+        "11110110000": ("base plate, front chassis, front chassis pin, rear chassis, front-rear pin, rear-rear pin", "The operator has installed the rear chassis long braces and secured them with two pins."),
+        "11110111100": ("base plate, front chassis, front chassis pin, rear chassis, front-rear pin, rear-rear pin, front bracket, bracket screw", "The operator has mounted the front bracket and installed the bracket screw."),
+        "11110111110": ("base plate, front chassis, front chassis pin, rear chassis, front-rear pin, rear-rear pin, front bracket, bracket screw, front wheel assembly", "The operator has mounted the wheels and acorn nuts on the front axle."),
+        "11110111111": ("all Procedure A components", "The operator has installed the rear wheel assembly including the wheels and rear pulley, completing the assembly."),
+        "11101111110": ("base plate, front chassis, front chassis pin, short rear chassis, front-rear pin, rear-rear pin, front bracket, bracket screw, front wheel assembly", "The operator has mounted the wheels and acorn nuts on the front axle."),
+        "11101111111": ("all Procedure B components", "The operator has completed the Procedure B upgrade with short rear chassis braces and wheel assemblies."),
+        "error_state": ("unknown / non-compliant state", "An error state or non-compliant assembly sequence was observed."),
+    }
+
+    from src.ingestion.asd_mapping import map_state_code_to_observed_items
+
+    for segment in segments:
+        start_t = segment["start_time_seconds"]
+        end_t = segment["end_time_seconds"]
+        
+        seg_dets = [
+            d for d in detections
+            if start_t <= d["timestamp_seconds"] <= end_t
+        ]
+        
+        segment["ppe_status"] = "not-visible"
+        segment["tool_in_use"] = None
+        segment["component_contact"] = "none"
+        segment["visible_safety_concern"] = False
+        segment["action_observed"] = "The operator is preparing parts or no assembly action is visible."
+        segment["observed_items"] = []
+
+        if not seg_dets:
+            continue
+
+        # Per-frame, take the highest-confidence detection above the threshold and tally
+        # its state code. Prefer 0.15; if nothing clears it in this window, retry at 0.05.
+        state_counts = {}
+        max_conf_map = {}
+        for threshold in (0.15, 0.05):
+            for frame_det in seg_dets:
+                valid_dets = [d for d in frame_det["detections"] if d["confidence"] >= threshold]
+                if not valid_dets:
+                    continue
+                best_d = max(valid_dets, key=lambda d: d["confidence"])
+                code = best_d["state_code"]
+                state_counts[code] = state_counts.get(code, 0) + 1
+                max_conf_map[code] = max(max_conf_map.get(code, 0.0), best_d["confidence"])
+            if state_counts:
+                break
+
+        if state_counts:
+            dominant_state = max(state_counts.keys(), key=lambda k: (state_counts[k], max_conf_map[k]))
+            best_conf = max_conf_map[dominant_state]
+            
+            contact, action = STATE_LABELS.get(dominant_state, ("unknown component configuration", f"The assembly state is {dominant_state}."))
+            
+            observed = map_state_code_to_observed_items(dominant_state, confidence=round(best_conf, 2))
+
+            segment["component_contact"] = contact
+            segment["action_observed"] = action
+            segment["observed_items"] = observed
+
+    return observations
+
+
 def run_video_phase2(
     observations: dict,
     run_id: str,
@@ -355,7 +467,7 @@ def run_video_phase2(
     checklist: dict | None = None,
 ) -> dict:
     """
-    Fill compliance fields for all segments using GPT-4o (Phase 2).
+    Fill compliance fields for all segments using GPT-4o or ASD (Phase 2).
 
     Iterates segments produced by build_time_windowed_segments(), extracts
     keyframes from the video using OpenCV (Vision mode), and calls GPT-4o for
@@ -371,6 +483,36 @@ def run_video_phase2(
     Returns:
         The same observations dict with all 5 compliance fields populated.
     """
+    if cfg.use_asd_perception and video_url:
+        # Check if video_url is remote or local
+        local_path = Path(video_url)
+        is_local = local_path.exists()
+        temp_file = None
+        
+        if not is_local:
+            # Download remote video URL to a temp file in tmp/
+            try:
+                logger.info(f"Downloading remote video for ASD: {video_url[:60]}")
+                temp_dir = Path(__file__).parent.parent.parent / "tmp" / "downloads"
+                temp_dir.mkdir(parents=True, exist_ok=True)
+                temp_file = temp_dir / f"temp_{run_id}.mp4"
+                urllib.request.urlretrieve(video_url, str(temp_file))
+                local_path = temp_file
+                logger.info(f"Downloaded video successfully to {temp_file}")
+            except Exception as exc:
+                logger.error(f"Failed to download remote video: {exc}. Falling back to default Phase 2 VLM.")
+                temp_file = None
+
+        try:
+            if temp_file or is_local:
+                return run_video_asd(observations, str(local_path))
+        finally:
+            if temp_file and temp_file.exists():
+                try:
+                    temp_file.unlink()
+                except Exception as e:
+                    logger.warning(f"Failed to delete temp file {temp_file}: {e}")
+
     segments = observations.get("segments", [])
     # A1: checklist-aware grounding — pass a compact item list (id + action + key_objects)
     # to each window's vision call so it reports which SOP steps it actually sees.

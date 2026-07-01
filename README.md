@@ -41,7 +41,7 @@ Presentation Next.js review dashboard (frontend/)
 | Prusa MK3S+ + OPENMARCIE | Demo SOP-video pair — real SOP matched to real assembly footage | PDF + MP4 |
 | SafetyCulture / Princeton SOP Templates | Additional demo SOP inputs | PDF |
 
-See [docs/PROJECT_CONTEXT.md](docs/PROJECT_CONTEXT.md) for download links and usage details.
+See the "Project context & constraints" section of [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for download links and usage details.
 
 ---
 
@@ -50,14 +50,12 @@ See [docs/PROJECT_CONTEXT.md](docs/PROJECT_CONTEXT.md) for download links and us
 ```
 procedureguard/
 ├── docs/
-│   ├── ARCHITECTURE.md          # As-built + original 5-layer design, data flows
-│   ├── PROJECT_CONTEXT.md       # Internship constraints, persona, datasets, success criteria
-│   ├── TECHNICAL_GUIDE.md       # Stack rules, code style, Azure doc URLs
+│   ├── ARCHITECTURE.md          # As-built design + project context, constraints, milestones
 │   ├── DECISIONS_AND_RATIONALE.md  # Architectural decision log
-│   ├── WEEKLY_PROGRESS.md       # Week-by-week progress tracking
 │   ├── KNOWN_ISSUES.md          # Azure gotchas and workarounds
 │   ├── MODEL_CARD.md            # Model details, performance targets, limitations
-│   └── BASELINE_DIFF_PLAN.md    # Next perception fix — deterministic baseline-diff
+│   ├── PERCEPTION.md            # Perception workstream: Phase-3 bake-off + 3-B plan + provenance
+│   └── UI.md                    # UI/design reference + product principles (frontend)
 ├── src/
 │   ├── ingestion/               # Document Intelligence (SOP) + GPT-4o Vision (video)
 │   ├── reasoning/               # GPT-4o prompts + Python sequence/timing + guards
@@ -120,14 +118,9 @@ See [docs/MODEL_CARD.md](docs/MODEL_CARD.md) for the full limitations and intend
 
 | File | Purpose |
 |---|---|
-| [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | As-built pipeline + original 5-layer design, data flows, service limits |
-| [docs/PROJECT_CONTEXT.md](docs/PROJECT_CONTEXT.md) | Internship constraints, pilot persona, tech stack, datasets, success criteria |
-| [docs/TECHNICAL_GUIDE.md](docs/TECHNICAL_GUIDE.md) | Stack constraints, code style rules, Azure documentation URLs |
+| [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | As-built pipeline + original 5-layer design, data flows, service limits, **project context/constraints/datasets/milestones** |
 | [docs/DECISIONS_AND_RATIONALE.md](docs/DECISIONS_AND_RATIONALE.md) | Architectural decision log — what was decided and why |
-| [docs/WEEKLY_PROGRESS.md](docs/WEEKLY_PROGRESS.md) | Week-by-week progress, blockers, and deliverable tracking |
 | [docs/KNOWN_ISSUES.md](docs/KNOWN_ISSUES.md) | Azure gotchas and workarounds discovered during development |
 | [docs/MODEL_CARD.md](docs/MODEL_CARD.md) | Model details, performance targets, known limitations, intended use |
-| [docs/BASELINE_DIFF_PLAN.md](docs/BASELINE_DIFF_PLAN.md) | Plan for the deterministic baseline-diff perception fix |
-| [docs/IMPROVEMENT_PLAN.md](docs/IMPROVEMENT_PLAN.md) | As-built vs as-designed gap analysis + prioritized roadmap |
-| [docs/UI_BUILD_PLAN.md](docs/UI_BUILD_PLAN.md) · [docs/DESIGN-ProcedureGuard.md](docs/DESIGN-ProcedureGuard.md) | UI/UX spec + design-token source of truth (frontend) |
-| [docs/VIDEO_INTELLIGENCE_RESEARCH.md](docs/VIDEO_INTELLIGENCE_RESEARCH.md) | Perception-model research (June 18) — provenance for current approach |
+| [docs/PERCEPTION.md](docs/PERCEPTION.md) | Perception workstream — Phase-3 bake-off (3-A VLM vs 3-B IndustReal ASD) + 3-B plan + superseded research |
+| [docs/UI.md](docs/UI.md) | UI/UX design reference, build plan, and product principles (frontend) |

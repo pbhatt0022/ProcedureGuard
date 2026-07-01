@@ -11,5 +11,13 @@ opencv-python>=4.10.0
 python-dotenv>=1.0.0
 tenacity>=8.5.0
 
+# ── Agent 3 / AIMS (Incident Management) ──────────────────────
+resend>=2.0.0
+
+# ── Agent 4 (QA Chat) ─────────────────────────────────────────
+mcp
+redis>=5,<7
+starlette>=0.37.2,<0.39.0
+
 # ── Dev / Test ─────────────────────────────────────────────────
 pytest>=8.3.0

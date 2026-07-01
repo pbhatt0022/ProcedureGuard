@@ -38,6 +38,7 @@ interface ChatMessage {
 function RunsCockpit() {
   const {
     activeRunId,
+    setActiveRunId,
     normalizedCtx,
     updateReviewerOverride,
     searchQuery,
@@ -71,6 +72,15 @@ function RunsCockpit() {
   const [sortField, setSortField] = useState<'sequence' | 'verdict' | 'confidence' | 'review_state'>('sequence');
   const [sortAsc, setSortAsc] = useState<boolean>(true);
   const [isCompactDensity, setIsCompactDensity] = useState<boolean>(true);
+
+  // Sync the active run from the ?run= query param, so refresh/deep-link/bookmark
+  // preserves which run is shown (otherwise it reverts to the default).
+  useEffect(() => {
+    const runParam = searchParams.get('run');
+    if (runParam && runParam !== activeRunId && allRuns.some(r => r.id === runParam)) {
+      setActiveRunId(runParam);
+    }
+  }, [searchParams, allRuns, activeRunId, setActiveRunId]);
 
   // Sync state from query parameters on navigation
   useEffect(() => {
@@ -116,52 +126,14 @@ function RunsCockpit() {
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([
     {
       sender: 'agent',
-      text: 'I am Agent 3 (Q&A Chat Agent). I can answer questions about the active run\'s adherence score, deviations, manual inspections, or coverage gaps. Try asking "what is the adherence score?" or "which steps require inspection?".',
+      text: 'Hi, I\'m your Compliance Assistant. Ask me anything about this run — verdicts, deviations, inspection steps, tickets, or audit logs. Try "what steps have deviations?" or "show open tickets for this run".',
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
     }
   ]);
 
-  if (isLoading) {
-    return (
-      <div className="p-6 flex flex-col gap-4 animate-pulse max-w-7xl mx-auto w-full select-none">
-        <div className="h-8 bg-pg-surface-3 rounded w-1/4" />
-        <div className="h-4 bg-pg-surface-3 rounded w-1/3" />
-        <div className="grid grid-cols-5 gap-3 mt-4">
-          {[1, 2, 3, 4, 5].map(i => (
-            <div key={i} className="h-20 bg-pg-surface-3 rounded" />
-          ))}
-        </div>
-        <div className="h-64 bg-pg-surface-3 rounded mt-4" />
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="p-6 flex flex-col gap-6 max-w-7xl mx-auto w-full select-none">
-        <h1 className="text-xl font-semibold text-pg-ink">Error Loading Run</h1>
-        <div className="p-4 bg-pg-semantic-error-bg border-l-4 border-pg-semantic-error rounded-pg-md text-xs text-pg-ink">
-          <p className="font-bold">Failed to load run details:</p>
-          <p className="mt-1 font-mono text-pg-ink-muted">{error}</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (allRuns.length === 0 || !normalizedCtx) {
-    return (
-      <div className="p-6 flex flex-col gap-6 max-w-7xl mx-auto w-full select-none">
-        <h1 className="text-xl font-semibold text-pg-ink">Compliance Verification Cockpit</h1>
-        <div className="p-8 bg-pg-canvas border border-pg-hairline rounded-pg-md text-center flex flex-col items-center justify-center gap-3">
-          <p className="text-sm font-semibold text-pg-ink">No verification runs available</p>
-          <p className="text-xs text-pg-ink-muted">To view reports, run the ProcedureGuard pipeline script to populate the run store.</p>
-        </div>
-      </div>
-    );
-  }
-
-  // Get runs context rows
-  const allRows = normalizedCtx.rows;
+  // Get runs context rows (null-safe: hooks below must run on every render, even
+  // while data is still loading — the early returns now live AFTER all hooks).
+  const allRows = normalizedCtx?.rows ?? [];
 
   // Filter rows based on search query and active filter badge
   const filteredRows = useMemo(() => {
@@ -346,6 +318,46 @@ function RunsCockpit() {
     };
   }, [filteredRows, activeSelectedRow, updateReviewerOverride, activeTab]);
 
+  // ── Early returns (AFTER all hooks, so hook order is stable across renders) ──
+  if (isLoading) {
+    return (
+      <div className="p-6 flex flex-col gap-4 animate-pulse max-w-7xl mx-auto w-full select-none">
+        <div className="h-8 bg-pg-surface-3 rounded w-1/4" />
+        <div className="h-4 bg-pg-surface-3 rounded w-1/3" />
+        <div className="grid grid-cols-5 gap-3 mt-4">
+          {[1, 2, 3, 4, 5].map(i => (
+            <div key={i} className="h-20 bg-pg-surface-3 rounded" />
+          ))}
+        </div>
+        <div className="h-64 bg-pg-surface-3 rounded mt-4" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="p-6 flex flex-col gap-6 max-w-7xl mx-auto w-full select-none">
+        <h1 className="text-xl font-semibold text-pg-ink">Error Loading Run</h1>
+        <div className="p-4 bg-pg-semantic-error-bg border-l-4 border-pg-semantic-error rounded-pg-md text-xs text-pg-ink">
+          <p className="font-bold">Failed to load run details:</p>
+          <p className="mt-1 font-mono text-pg-ink-muted">{error}</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (allRuns.length === 0 || !normalizedCtx) {
+    return (
+      <div className="p-6 flex flex-col gap-6 max-w-7xl mx-auto w-full select-none">
+        <h1 className="text-xl font-semibold text-pg-ink">Compliance Verification Cockpit</h1>
+        <div className="p-8 bg-pg-canvas border border-pg-hairline rounded-pg-md text-center flex flex-col items-center justify-center gap-3">
+          <p className="text-sm font-semibold text-pg-ink">No verification runs available</p>
+          <p className="text-xs text-pg-ink-muted">To view reports, run the ProcedureGuard pipeline script to populate the run store.</p>
+        </div>
+      </div>
+    );
+  }
+
   // Seek video and play segment helper
   const seekVideoTo = (seconds: number) => {
     const video = activeTab === 'OVERVIEW' ? timelineVideoRef.current : videoRef.current;
@@ -386,7 +398,6 @@ function RunsCockpit() {
     setChatInput('');
 
     // Add a temporary typing indicator message
-    const typingId = Date.now().toString();
     setChatMessages(prev => [...prev, {
       sender: 'agent',
       text: 'Thinking...',
@@ -468,19 +479,27 @@ function RunsCockpit() {
 
         {/* Header Actions */}
         <div className="flex items-center gap-2">
-          <button className="flex items-center gap-2 text-xs text-pg-ink font-semibold px-3 py-1.5 border border-pg-hairline-strong rounded-pg-sm bg-pg-canvas hover:bg-pg-surface-hover cursor-pointer btn-tactile">
-            <ArrowCounterclockwise20Regular className="text-pg-ink-muted" />
+          <button
+            disabled
+            title="Re-runs are triggered from the pipeline CLI (e.g. python scripts/run_industreal_demo.py), not the dashboard."
+            className="flex items-center gap-2 text-xs text-pg-ink-subtle font-semibold px-3 py-1.5 border border-pg-hairline rounded-pg-sm bg-pg-surface-2 cursor-not-allowed opacity-60"
+          >
+            <ArrowCounterclockwise20Regular className="text-pg-ink-subtle" />
             <span>Re-run pipeline</span>
           </button>
-          <button className="flex items-center gap-2 text-xs text-pg-ink font-semibold px-3 py-1.5 border border-pg-hairline-strong rounded-pg-sm bg-pg-canvas hover:bg-pg-surface-hover cursor-pointer btn-tactile">
+          <button
+            onClick={() => handleTabChange('REVIEW')}
+            title="Open the Human Review queue for this run"
+            className="flex items-center gap-2 text-xs text-pg-ink font-semibold px-3 py-1.5 border border-pg-hairline-strong rounded-pg-sm bg-pg-canvas hover:bg-pg-surface-hover cursor-pointer btn-tactile"
+          >
             <Share20Regular className="text-pg-ink-muted" />
             <span>Send for review</span>
           </button>
           <a
-            href={isWorkspaceClean ? "/export" : "#"}
-            onClick={(e) => {
+            href="/export"
+            onClick={() => {
               if (!isWorkspaceClean) {
-                alert("Warning: Deviations or Inspections require review. Report exported will be watermarked DRAFT.");
+                alert("Note: this run has deviations or inspection items pending review. The exported report will be watermarked DRAFT.");
               }
             }}
             className="flex items-center gap-2 text-xs text-white font-semibold px-3 py-1.5 rounded-pg-sm bg-pg-primary hover:bg-pg-primary-hover cursor-pointer btn-tactile"
@@ -1076,7 +1095,7 @@ function RunsCockpit() {
             <div className="bg-pg-canvas border border-pg-hairline rounded-pg-md shadow-pg-subtle flex flex-col h-[500px]">
               <div className="p-3 border-b border-pg-hairline bg-pg-surface-2 flex items-center gap-2 text-xs font-bold text-pg-ink-muted">
                 <Bot20Regular className="text-pg-primary" />
-                <span>Agent 3 Compliance Chat Assistant</span>
+                <span>Compliance Assistant</span>
               </div>
 
               {/* Chat Feed */}

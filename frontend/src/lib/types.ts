@@ -76,7 +76,8 @@ export interface RunData {
     items: ChecklistItem[];
   };
   observations: {
-    video_file: string;
+    video_file?: string;
+    video_url?: string;
     video_duration_seconds: number;
     analyzer_id: string;
     total_segments: number;

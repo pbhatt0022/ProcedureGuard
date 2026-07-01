@@ -248,8 +248,8 @@ export default function Dashboard() {
                 {runStats.map(run => (
                   <tr key={run.id} className="hover:bg-pg-surface-hover transition-all duration-150">
                     <td className="px-5 py-4 font-mono font-semibold text-pg-ink">
-                      <Link 
-                        href="/runs" 
+                      <Link
+                        href={`/runs?run=${run.id}`}
                         onClick={() => setActiveRunId(run.id)}
                         className="hover:underline hover:text-pg-primary"
                       >
@@ -279,8 +279,8 @@ export default function Dashboard() {
                       </span>
                     </td>
                     <td className="px-5 py-4 text-right">
-                      <Link 
-                        href="/runs" 
+                      <Link
+                        href={`/runs?run=${run.id}`}
                         onClick={() => setActiveRunId(run.id)}
                         className="text-pg-ink-subtle hover:text-pg-primary cursor-pointer transition-all"
                         title="View run evidence"

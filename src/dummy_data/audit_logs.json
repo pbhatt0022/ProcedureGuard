@@ -1,0 +1,103 @@
+[
+  {
+    "run_id": "RUN-102",
+    "event_type": "run_started",
+    "timestamp": "2026-06-16T08:00:00Z",
+    "actor": "system",
+    "description": "Production run RUN-102 started for Vehicle Assembly SOP."
+  },
+  {
+    "run_id": "RUN-102",
+    "event_type": "step_verified",
+    "timestamp": "2026-06-16T08:05:00Z",
+    "actor": "qa_agent",
+    "description": "STEP-01 verified as compliant.",
+    "step_id": "STEP-01"
+  },
+  {
+    "run_id": "RUN-102",
+    "event_type": "deviation_detected",
+    "timestamp": "2026-06-16T08:12:00Z",
+    "actor": "qa_agent",
+    "description": "Deviation detected on STEP-02 for incorrect battery harness routing.",
+    "step_id": "STEP-02"
+  },
+  {
+    "run_id": "RUN-102",
+    "event_type": "ticket_created",
+    "timestamp": "2026-06-16T08:13:00Z",
+    "actor": "ticketing_service",
+    "description": "Incident INC-2044 created for STEP-02.",
+    "step_id": "STEP-02",
+    "ticket_id": "INC-2044"
+  },
+  {
+    "run_id": "RUN-102",
+    "event_type": "ticket_assigned",
+    "timestamp": "2026-06-16T08:14:30Z",
+    "actor": "ticketing_service",
+    "description": "Incident INC-2044 assigned to qa.supervisor@procedureguard.local.",
+    "step_id": "STEP-02",
+    "ticket_id": "INC-2044"
+  },
+  {
+    "run_id": "RUN-102",
+    "event_type": "deviation_reviewed",
+    "timestamp": "2026-06-16T08:18:00Z",
+    "actor": "qa.reviewer@procedureguard.local",
+    "description": "STEP-02 deviation reviewed and confirmed for incident follow-up.",
+    "step_id": "STEP-02",
+    "ticket_id": "INC-2044",
+    "incident_id": "INC-2044"
+  },
+  {
+    "run_id": "RUN-102",
+    "event_type": "deviation_detected",
+    "timestamp": "2026-06-16T08:20:00Z",
+    "actor": "qa_agent",
+    "description": "Critical deviation detected on STEP-03 for low torque values.",
+    "step_id": "STEP-03"
+  },
+  {
+    "run_id": "RUN-102",
+    "event_type": "ticket_created",
+    "timestamp": "2026-06-16T08:21:00Z",
+    "actor": "ticketing_service",
+    "description": "Incident INC-2045 created for STEP-03.",
+    "step_id": "STEP-03",
+    "ticket_id": "INC-2045"
+  },
+  {
+    "run_id": "RUN-102",
+    "event_type": "ticket_status_checked",
+    "timestamp": "2026-06-16T08:24:00Z",
+    "actor": "ticketing_service",
+    "description": "INC-2044 status updated to In Progress after supervisor acknowledgement.",
+    "step_id": "STEP-02",
+    "ticket_id": "INC-2044",
+    "incident_id": "INC-2044"
+  },
+  {
+    "run_id": "RUN-102",
+    "event_type": "verification_blocked",
+    "timestamp": "2026-06-16T08:28:00Z",
+    "actor": "qa_agent",
+    "description": "STEP-04 was marked unable to verify because the camera view was obstructed.",
+    "step_id": "STEP-04"
+  },
+  {
+    "run_id": "RUN-102",
+    "event_type": "step_verified",
+    "timestamp": "2026-06-16T08:37:00Z",
+    "actor": "qa_agent",
+    "description": "STEP-05 verified as compliant.",
+    "step_id": "STEP-05"
+  },
+  {
+    "run_id": "RUN-102",
+    "event_type": "run_completed",
+    "timestamp": "2026-06-16T08:42:00Z",
+    "actor": "system",
+    "description": "Production run RUN-102 completed."
+  }
+]
