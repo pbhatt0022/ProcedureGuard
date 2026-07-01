@@ -10,15 +10,14 @@ from typing import Any
 
 from mcp import ClientSession, StdioServerParameters
 from mcp.client.stdio import stdio_client
-from openai import OpenAI
-
 from src.agents.query_resolution import QueryResolution, resolve_query
 from src.config import Config, get_config
+from src.openai_client import get_openai_client
 from src.providers.conversation_state_store import ConversationStateStore
 
 
 SYSTEM_PROMPT = (
-    "You are Agent 4, the ProcedureGuard Q&A Chat Agent. You are read-only. "
+    "You are the ProcedureGuard Compliance Assistant. You are read-only. "
     "You can retrieve stored run summaries, verdicts, SOP checklist steps, keyframes, "
     "video clips, incident records, ticket status, tickets, and audit logs using MCP tools. "
     "Your job is to answer run-level compliance questions, step-level verdict explanations, "
@@ -332,10 +331,7 @@ class QAAgent:
         messages: list[dict[str, Any]],
         tool_definitions: list[MCPToolDefinition],
     ) -> Any:
-        client = OpenAI(
-            base_url=self.config.azure_openai_endpoint,
-            api_key=self.config.azure_openai_api_key,
-        )
+        client = get_openai_client()
         return client.chat.completions.create(
             model=self.config.azure_openai_deployment_name,
             messages=messages,

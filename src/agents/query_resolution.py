@@ -80,15 +80,7 @@ def resolve_query(
     if explicit_incident_id:
         debug_notes.append(f"explicit incident resolved to {explicit_incident_id}")
 
-    vague_reference = _has_vague_reference(lowered) or intent in {
-        "deviation_reason",
-        "evidence_request",
-        "keyframe_request",
-        "clip_request",
-        "incident_query",
-        "ticket_query",
-        "reviewer_history",
-    }
+    vague_reference = _has_vague_reference(lowered)
     if step_id is None and _step_context_relevant(intent, lowered):
         if state.current_step_id:
             step_id = state.current_step_id

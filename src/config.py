@@ -14,7 +14,7 @@ load_dotenv()
 class Config:
     azure_openai_endpoint: str = ""
     azure_openai_api_key: str = ""
-    azure_openai_deployment_name: str = "gpt-4.1-mini"
+    azure_openai_deployment_name: str = "gpt-4o"
     azure_openai_api_version: str = ""
     provider_mode: str = "mcp"
     mcp_server_command: str = "python scripts/run_mcp_server.py"
@@ -31,7 +31,7 @@ class Config:
             azure_openai_deployment_name=(
                 os.environ.get("QA_DEPLOYMENT_NAME", "").strip()
                 or os.environ.get("AZURE_OPENAI_DEPLOYMENT_NAME", "").strip()
-                or "gpt-4.1-mini"
+                or "gpt-4o"
             ),
             azure_openai_api_version=os.environ.get("AZURE_OPENAI_API_VERSION", "").strip(),
             provider_mode=os.environ.get("PROVIDER_MODE", "mcp").strip().lower() or "mcp",
@@ -51,19 +51,9 @@ class Config:
         )
 
     def validate_for_gpt(self) -> None:
-        missing = []
+        # API key is optional — system uses DefaultAzureCredential when blank.
         if not self.azure_openai_endpoint:
-            missing.append("AZURE_OPENAI_ENDPOINT")
-        if not self.azure_openai_api_key:
-            missing.append("AZURE_OPENAI_API_KEY")
-        if not self.azure_openai_deployment_name:
-            missing.append("AZURE_OPENAI_DEPLOYMENT_NAME")
-        if not self.azure_openai_api_version:
-            missing.append("AZURE_OPENAI_API_VERSION")
-
-        if missing:
-            joined = ", ".join(missing)
-            raise ValueError(f"Missing Azure OpenAI configuration: {joined}")
+            raise ValueError("Missing Azure OpenAI configuration: AZURE_OPENAI_ENDPOINT")
 
 
 def get_config() -> Config:

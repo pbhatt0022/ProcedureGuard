@@ -42,7 +42,7 @@ export async function POST(
 ) {
   const { runId } = await ctx.params;
 
-  if (!/^run-[\w-]+$/.test(runId)) {
+  if (!/^[\w][\w.-]*$/.test(runId)) {
     return NextResponse.json({ error: 'Invalid run ID' }, { status: 400 });
   }
 
@@ -54,8 +54,11 @@ export async function POST(
     return NextResponse.json({ error: 'Question is required' }, { status: 400 });
   }
 
+  // ponytail: demo mapping — SQLite only has RUN-102 data; frontend run-asd-* IDs map here.
+  const qaRunId = runId.startsWith('run-') ? 'RUN-102' : runId;
+
   try {
-    const answer = await callQAAgent(question, runId, sessionId);
+    const answer = await callQAAgent(question, qaRunId, sessionId);
     return NextResponse.json({ answer });
   } catch (e: unknown) {
     const msg = e instanceof Error ? e.message : 'QA agent failed';
